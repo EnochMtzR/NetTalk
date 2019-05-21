@@ -1,0 +1,24 @@
+{
+  "name": "nettalk",
+  "version": "1.0.0",
+  "description": "Library to handle connections via sockets with Capesoft's Nettalk.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx jest --coverage"
+  },
+  "keywords": [
+    "NetTalk",
+    "Capesoft",
+    "Sockets",
+    "Clarion"
+  ],
+  "author": "Joseph Enoch Martinez Rojas",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^24.0.13",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.5"
+  }
+}
