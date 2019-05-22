@@ -1,5 +1,6 @@
 import * as path from "path";
 import NetTalk, { NetTalkOptions } from "../NetTalk";
+import * as fixtures from "./fixtures/NetTalkOptions.fixture";
 
 describe("Testing NetTalk Instantiation", () => {
   test("should throw error when no options are provided", () => {
@@ -176,7 +177,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: "WPP",
           ssl: {
             key: "path/not/existent/file.pem",
-            certificate: path.join(__dirname, "..", "server.crt")
+            certificate: path.join(__dirname, "certificates", "server.crt")
           }
         };
 
@@ -189,7 +190,7 @@ describe("Testing NetTalk Instantiation", () => {
           port: 56,
           protocol: "WPP",
           ssl: {
-            key: path.join(__dirname, "..", "key.pem"),
+            key: path.join(__dirname, "certificates", "key.pem"),
             certificate: "path/not/existent/file.crt"
           }
         };
@@ -205,8 +206,8 @@ describe("Testing NetTalk Instantiation", () => {
           port: 56,
           protocol: "WPP",
           ssl: {
-            key: path.join(__dirname, "..", "invalidKey.pem"),
-            certificate: path.join(__dirname, "..", "server.crt")
+            key: path.join(__dirname, "certificates", "invalidKey.pem"),
+            certificate: path.join(__dirname, "certificates", "server.crt")
           }
         };
 
@@ -219,8 +220,8 @@ describe("Testing NetTalk Instantiation", () => {
           port: 56,
           protocol: "WPP",
           ssl: {
-            key: path.join(__dirname, "..", "key.pem"),
-            certificate: path.join(__dirname, "..", "invalidCer.crt")
+            key: path.join(__dirname, "certificates", "key.pem"),
+            certificate: path.join(__dirname, "certificates", "invalidCer.crt")
           }
         };
 
@@ -230,12 +231,14 @@ describe("Testing NetTalk Instantiation", () => {
   });
 
   test("should return instance of NetTalk when valid Options provided", () => {
-    const options: NetTalkOptions = {
-      host: "",
-      port: 3000,
-      protocol: "PPP"
-    };
+    expect(new NetTalk(fixtures.validSSLOptions_Password)).toBeInstanceOf(
+      NetTalk
+    );
 
-    expect(new NetTalk(options)).toBeInstanceOf(NetTalk);
+    expect(new NetTalk(fixtures.validSSLOptions_noPassword)).toBeInstanceOf(
+      NetTalk
+    );
+
+    expect(new NetTalk(fixtures.validTCPOptions)).toBeInstanceOf(NetTalk);
   });
 });

@@ -1,4 +1,6 @@
 import * as fs from "fs";
+import * as tls from "tls";
+import * as tcp from "net";
 
 export interface NetTalkOptions {
   host: string;
@@ -11,6 +13,10 @@ export interface NetTalkOptions {
   protocol: "WPP" | "PPP";
 }
 
+interface eventCallbacks {
+  serverStarted: (serverType: "SSL" | "TCP") => void;
+}
+
 export default class NetTalk {
   private host: string;
   private port: number;
@@ -20,6 +26,10 @@ export default class NetTalk {
     certificate: "",
     password: ""
   };
+  private server: tls.Server | tcp.Server;
+  private events = {
+    serverStarted: () => {}
+  } as eventCallbacks;
 
   constructor(options: NetTalkOptions) {
     try {
@@ -36,9 +46,79 @@ export default class NetTalk {
         this.ssl = null;
       }
     } catch (e) {
-      throw e;
+      this.errorHandling(e);
     }
   }
+
+  startServer = () => {
+    const serverOptions: tls.TlsOptions = {
+      key: this.ssl ? fs.readFileSync(this.ssl.key) : "",
+      cert: this.ssl ? fs.readFileSync(this.ssl.certificate) : "",
+      passphrase: this.ssl ? this.ssl.password : ""
+    };
+
+    try {
+      this.server = this.ssl
+        ? tls.createServer(serverOptions, this.newSSLConnection)
+        : tcp.createServer(this.newTCPConnection);
+
+      this.server.listen(this.port, this.host, this.listening);
+      this.server.on("error", this.errorHandling);
+    } catch (e) {
+      this.errorHandling(e);
+    }
+  };
+
+  on<event extends keyof eventCallbacks>(
+    event: event,
+    callback: eventCallbacks[event]
+  ) {
+    this.events[event] = callback;
+  }
+
+  private newSSLConnection = (socket: tls.TLSSocket) => {};
+
+  private newTCPConnection = (socket: tcp.Socket) => {};
+
+  private listening = () => {
+    if (this.server instanceof tls.Server) {
+      console.info(`Secure server started listening on port ${this.port}`);
+      this.events.serverStarted("SSL");
+    } else {
+      console.info(`Server started listening on port ${this.port}`);
+      this.events.serverStarted("TCP");
+    }
+  };
+
+  get isServerUp() {
+    return this.server.listening;
+  }
+
+  get type() {
+    return this.server instanceof tls.Server ? "SSL" : "TCP";
+  }
+
+  shutDown = () => {
+    this.server.close();
+  };
+
+  private errorHandling = (error: any) => {
+    let returnError: Error;
+    if (error.message.includes("0B080074")) {
+      returnError = new Error("crt and pem files do not match.");
+    } else if (error.message.includes("06065064")) {
+      if (this.ssl.password) {
+        returnError = new Error("Wrong password provided for key file");
+      } else {
+        returnError = new Error(
+          "No password has been provided for a password protected key file"
+        );
+      }
+    } else {
+      returnError = new Error(error);
+    }
+    throw returnError;
+  };
 }
 
 const validateOptions = (options: NetTalkOptions) => {
@@ -53,6 +133,7 @@ const validateOptions = (options: NetTalkOptions) => {
     );
     throw error;
   }
+
   if (options.port) {
     if (typeof options.port !== "number") {
       const error = new Error(
@@ -64,6 +145,7 @@ const validateOptions = (options: NetTalkOptions) => {
     const error = new Error(`Port must be provided.`);
     throw error;
   }
+
   if (options.protocol) {
     if (options.protocol !== "WPP" && options.protocol !== "PPP") {
       const error = new Error(

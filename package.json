@@ -4,7 +4,7 @@
   "description": "Library to handle connections via sockets with Capesoft's Nettalk.",
   "main": "index.js",
   "scripts": {
-    "test": "npx jest --coverage"
+    "test": "npx jest --coverage && cd coverage/lcov-report && google-chrome http://127.0.0.1:8080 && http-server"
   },
   "keywords": [
     "NetTalk",
