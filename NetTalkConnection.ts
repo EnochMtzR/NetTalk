@@ -50,8 +50,11 @@ export default class NetTalkConnection {
 
   private onDataReceived = (data: Buffer) => {
     if (data.readInt8(data.length - 1) === this.delimiter.charCodeAt(0)) {
-      if (this.eventCallbacks.dataReceived)
-        this.call("dataReceived", this, data.toString("utf8"));
+      this.call(
+        "dataReceived",
+        this,
+        data.toString("utf8", 0, data.length - 1)
+      );
     }
   };
 

@@ -13,9 +13,7 @@ export class Socket {
 
   private timer? = 0;
 
-  constructor() {
-    console.log("mocked New Socket");
-  }
+  constructor() {}
 
   on<Event extends keyof IEventCallbacks>(
     event: Event,
@@ -39,9 +37,7 @@ export class Socket {
     this.eventListeners.timeout = callback;
   }
 
-  destroy() {
-    console.log("mocked destroy");
-  }
+  destroy() {}
 
   __connectMocked?() {
     setTimeout(this.eventListeners.timeout, 1000);
