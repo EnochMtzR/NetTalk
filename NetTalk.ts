@@ -11,25 +11,34 @@ export interface NetTalkOptions {
     password?: string;
   };
   protocol: "WPP" | "PPP";
+  /**
+   * **only when `protocol = "PPP"`**
+   *
+   * Represents the character, previously agreed on, to be sent at the end of a packet to signify the end of that packet.
+   */
+  delimiter?: string;
 }
 
-interface eventCallbacks {
+interface IEventCallbacks {
   serverStarted: (serverType: "SSL" | "TCP") => void;
+}
+
+interface IEventCallbackParams {
+  serverStarted: ["SSL" | "TCP"];
 }
 
 export default class NetTalk {
   private host: string;
   private port: number;
   private protocol: "WPP" | "PPP";
+  private delimiter: string;
   private ssl = {
     key: "",
     certificate: "",
     password: ""
   };
   private server: tls.Server | tcp.Server;
-  private events = {
-    serverStarted: () => {}
-  } as eventCallbacks;
+  private eventCallbacks = {} as IEventCallbacks;
 
   constructor(options: NetTalkOptions) {
     try {
@@ -38,6 +47,8 @@ export default class NetTalk {
       this.host = options.host;
       this.port = options.port;
       this.protocol = options.protocol;
+      this.delimiter = options.delimiter ? options.delimiter : "\0";
+
       if (options.ssl) {
         this.ssl.key = options.ssl.key;
         this.ssl.certificate = options.ssl.certificate;
@@ -50,7 +61,7 @@ export default class NetTalk {
     }
   }
 
-  startServer = () => {
+  startServer() {
     const serverOptions: tls.TlsOptions = {
       key: this.ssl ? fs.readFileSync(this.ssl.key) : "",
       cert: this.ssl ? fs.readFileSync(this.ssl.certificate) : "",
@@ -67,13 +78,20 @@ export default class NetTalk {
     } catch (e) {
       this.errorHandling(e);
     }
-  };
+  }
 
-  on<event extends keyof eventCallbacks>(
-    event: event,
-    callback: eventCallbacks[event]
+  on<Event extends keyof IEventCallbacks>(
+    event: Event,
+    listener: IEventCallbacks[Event]
   ) {
-    this.events[event] = callback;
+    this.eventCallbacks[event] = listener;
+  }
+
+  private call<Event extends keyof IEventCallbackParams>(
+    event: Event,
+    ...params: IEventCallbackParams[Event]
+  ) {
+    (<any>this.eventCallbacks[event])(...params);
   }
 
   private newSSLConnection = (socket: tls.TLSSocket) => {};
@@ -83,10 +101,10 @@ export default class NetTalk {
   private listening = () => {
     if (this.server instanceof tls.Server) {
       console.info(`Secure server started listening on port ${this.port}`);
-      this.events.serverStarted("SSL");
+      this.call("serverStarted", "SSL");
     } else {
       console.info(`Server started listening on port ${this.port}`);
-      this.events.serverStarted("TCP");
+      this.call("serverStarted", "TCP");
     }
   };
 
@@ -98,9 +116,9 @@ export default class NetTalk {
     return this.server instanceof tls.Server ? "SSL" : "TCP";
   }
 
-  shutDown = () => {
+  shutDown() {
     this.server.close();
-  };
+  }
 
   private errorHandling = (error: any) => {
     let returnError: Error;
@@ -157,6 +175,11 @@ const validateOptions = (options: NetTalkOptions) => {
     }
   } else {
     const error = new Error(`Protocol must be provided.`);
+    throw error;
+  }
+
+  if (options.delimiter && options.delimiter.length > 1) {
+    const error = new Error("Invalid delimiter provided.");
     throw error;
   }
 

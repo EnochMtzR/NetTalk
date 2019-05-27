@@ -90,7 +90,20 @@ describe("Testing NetTalk Instantiation", () => {
       }).toThrow('Invalid Protocol: must be "WPP" or "PPP"');
     });
 
-    test("6. No Key or Certificate provided when SSL declared", () => {
+    test("6. Invalid delimiter Provided", () => {
+      expect(() => {
+        const options: NetTalkOptions = {
+          host: "localhost",
+          port: 56,
+          protocol: "PPP",
+          delimiter: "invalid"
+        };
+
+        new NetTalk(options);
+      }).toThrow("Invalid delimiter provided.");
+    });
+
+    test("7. No Key or Certificate provided when SSL declared", () => {
       expect(() => {
         const options: NetTalkOptions = {
           host: "localhost",
@@ -169,7 +182,7 @@ describe("Testing NetTalk Instantiation", () => {
       );
     });
 
-    test("7. Non-Existent Key or Certificate provided", () => {
+    test("8. Non-Existent Key or Certificate provided", () => {
       expect(() => {
         const options: NetTalkOptions = {
           host: "localhost",
@@ -199,7 +212,7 @@ describe("Testing NetTalk Instantiation", () => {
       }).toThrow("Key or Certificate not found");
     });
 
-    test("8. Invalid Key or Certificate provided", () => {
+    test("9. Invalid Key or Certificate provided", () => {
       expect(() => {
         const options: NetTalkOptions = {
           host: "localhost",
