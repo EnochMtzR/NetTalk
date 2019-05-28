@@ -1,17 +1,25 @@
 interface IEventCallbacks {
   data: (data: Buffer) => void;
   timeout: () => void;
+  error: (error: Error) => void;
+  close: (hasError: boolean) => void;
+  end: () => void;
 }
 
 interface IEventCallbackParams {
   data: [Buffer];
   timeout: [];
+  error: [Error];
+  close: [boolean];
+  end: [];
 }
 
 export class Socket {
   private eventListeners? = {} as IEventCallbacks;
 
   private timer? = 0;
+
+  remoteAddress = "127.0.0.1";
 
   constructor() {}
 
@@ -40,10 +48,23 @@ export class Socket {
   destroy() {}
 
   __connectMocked?() {
-    setTimeout(this.eventListeners.timeout, 1000);
+    if (this.timer) setTimeout(this.eventListeners.timeout, this.timer);
   }
 
   __emitDataEvent?(data: Buffer) {
     this.call("data", data);
+  }
+
+  __emitError?(error: Error) {
+    this.call("error", error);
+    this.call("close", true);
+  }
+
+  __emitClose?() {
+    this.call("close", false);
+  }
+
+  __emitClientDisconnect?() {
+    this.call("end");
   }
 }

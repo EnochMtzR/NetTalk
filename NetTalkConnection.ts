@@ -4,19 +4,23 @@ import * as tcp from "net";
 interface IEventCallbacks {
   dataReceived: (connection: NetTalkConnection, data: string) => void;
   timeOut: (connection: NetTalkConnection) => void;
+  connectionClosed: (connection: NetTalkConnection, error?: Error) => void;
+  clientDisconnected: (connection: NetTalkConnection) => void;
 }
 
 interface IEventCallbackParams {
   dataReceived: [NetTalkConnection, string];
   timeOut: [NetTalkConnection];
+  connectionClosed: [NetTalkConnection, Error?];
+  clientDisconnected: [NetTalkConnection];
 }
 
-interface INetTalkConnectionOptions {
+export interface INetTalkConnectionOptions {
   socket: tls.TLSSocket | tcp.Socket;
   id: number;
   delimiter?: string;
   timeOut?: number;
-  keepAlive: number;
+  keepAlive?: number;
 }
 
 export default class NetTalkConnection {
@@ -34,8 +38,11 @@ export default class NetTalkConnection {
     if (options.keepAlive) this.socket.setKeepAlive(true, options.keepAlive);
     if (options.timeOut) this.socket.setTimeout(options.timeOut);
 
-    this.socket.on("data", this.onDataReceived);
-    this.socket.on("timeout", this.onTimeOut);
+    this.socket.on("data", this.onDataReceived.bind(this));
+    this.socket.on("timeout", this.onTimeOut.bind(this));
+    this.socket.on("error", this.onError.bind(this));
+    this.socket.on("close", this.onClosed.bind(this));
+    this.socket.on("end", this.onClientDisconnected.bind(this));
   }
 
   on<event extends keyof IEventCallbacks>(
@@ -53,7 +60,7 @@ export default class NetTalkConnection {
       (<any>this.eventCallbacks[event])(...params);
   }
 
-  private onDataReceived = (data: Buffer) => {
+  private onDataReceived(data: Buffer) {
     if (data.readInt8(data.length - 1) === this.delimiter.charCodeAt(0)) {
       this.call(
         "dataReceived",
@@ -61,15 +68,48 @@ export default class NetTalkConnection {
         data.toString("utf8", 0, data.length - 1)
       );
     }
-  };
+  }
 
-  private onTimeOut = () => {
-    console.log(
+  private onTimeOut() {
+    console.warn(
       `Connection No. ${this.id} (${this.socket.remoteAddress}) has timedOut`
     );
     this.call("timeOut", this);
     this.socket.destroy();
-  };
+  }
+
+  private onError(error: Error) {
+    console.error(
+      `Error on connection No. ${this.id} (${
+        this.socket.remoteAddress
+      })\n${error}`
+    );
+    this.call("connectionClosed", this, error);
+  }
+
+  private onClosed(withError: boolean) {
+    if (!withError) {
+      console.info(
+        `Connection No. ${this.id} (${
+          this.socket.remoteAddress
+        }) has been terminated.`
+      );
+      this.call("connectionClosed", this);
+    } else {
+      console.warn(
+        `Connection No. ${this.id} (${
+          this.socket.remoteAddress
+        }) has closed with errors."`
+      );
+    }
+  }
+
+  private onClientDisconnected() {
+    console.info(
+      `Client No. ${this.id} (${this.socket.remoteAddress}) has disconnected.`
+    );
+    this.call("clientDisconnected", this);
+  }
 
   get UUID() {
     return this.id;
