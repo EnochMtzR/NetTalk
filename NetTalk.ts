@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as tls from "tls";
 import * as tcp from "net";
+import NetTalkConnection from "./NetTalkConnection";
 
 export interface NetTalkOptions {
   host: string;
@@ -17,6 +18,8 @@ export interface NetTalkOptions {
    * Represents the character, previously agreed on, to be sent at the end of a packet to signify the end of that packet.
    */
   delimiter?: string;
+  timeOut?: number;
+  keepAlive?: number;
 }
 
 interface IEventCallbacks {
@@ -32,6 +35,8 @@ export default class NetTalk {
   private port: number;
   private protocol: "WPP" | "PPP";
   private delimiter: string;
+  private timeOut: number;
+  private keepAlive: number;
   private ssl = {
     key: "",
     certificate: "",
@@ -48,6 +53,8 @@ export default class NetTalk {
       this.port = options.port;
       this.protocol = options.protocol;
       this.delimiter = options.delimiter ? options.delimiter : "\0";
+      this.timeOut = options.timeOut;
+      this.keepAlive = options.keepAlive;
 
       if (options.ssl) {
         this.ssl.key = options.ssl.key;

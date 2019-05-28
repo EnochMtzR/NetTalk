@@ -11,24 +11,29 @@ interface IEventCallbackParams {
   timeOut: [NetTalkConnection];
 }
 
+interface INetTalkConnectionOptions {
+  socket: tls.TLSSocket | tcp.Socket;
+  id: number;
+  delimiter?: string;
+  timeOut?: number;
+  keepAlive: number;
+}
+
 export default class NetTalkConnection {
   private socket: tls.TLSSocket | tcp.Socket;
   private id: number;
   private delimiter: string;
   private eventCallbacks = {} as IEventCallbacks;
 
-  constructor(
-    socket: tls.TLSSocket | tcp.Socket,
-    id: number,
-    delimiter: string = "\0"
-  ) {
-    validateParametters(socket);
-    this.socket = socket;
-    this.id = id;
-    this.delimiter = delimiter;
+  constructor(options: INetTalkConnectionOptions) {
+    validateParametters(options.socket);
+    this.socket = options.socket;
+    this.id = options.id;
+    this.delimiter = options.delimiter ? options.delimiter : "\0";
 
-    this.socket.setKeepAlive(true, 1200);
-    this.socket.setTimeout(3000);
+    if (options.keepAlive) this.socket.setKeepAlive(true, options.keepAlive);
+    if (options.timeOut) this.socket.setTimeout(options.timeOut);
+
     this.socket.on("data", this.onDataReceived);
     this.socket.on("timeout", this.onTimeOut);
   }
