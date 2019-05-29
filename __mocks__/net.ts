@@ -1,5 +1,3 @@
-import { connect } from "http2";
-
 interface ISocketEventCallbacks {
   data: (data: Buffer) => void;
   timeout: () => void;
@@ -16,23 +14,27 @@ interface ISocketEventCallbackParams {
   end: [];
 }
 
+let MockedServer: Server;
+
 export class Socket {
   private eventListeners? = {} as ISocketEventCallbacks;
 
   private timer? = 0;
 
-  remoteAddress = "127.0.0.1";
+  remoteAddress? = "127.0.0.1";
 
-  constructor() {}
+  constructor() {
+    console.log("Mocked TCP Socket created");
+  }
 
-  on<Event extends keyof ISocketEventCallbacks>(
+  on?<Event extends keyof ISocketEventCallbacks>(
     event: Event,
     listener: ISocketEventCallbacks[Event]
   ) {
     this.eventListeners[event] = listener;
   }
 
-  private call?<Event extends keyof ISocketEventCallbacks>(
+  call?<Event extends keyof ISocketEventCallbacks>(
     event: Event,
     ...params: ISocketEventCallbackParams[Event]
   ) {
@@ -40,14 +42,14 @@ export class Socket {
       (<any>this.eventListeners[event])(...params);
   }
 
-  setKeepAlive(activated: boolean, time: number) {}
+  setKeepAlive?(activated: boolean, time: number) {}
 
-  setTimeout(time: number, callback?: () => void) {
+  setTimeout?(time: number, callback?: () => void) {
     this.timer = time;
     this.eventListeners.timeout = callback;
   }
 
-  destroy() {}
+  destroy?() {}
 
   __setRemoteIP?(address: string) {
     this.remoteAddress = address;
@@ -78,26 +80,30 @@ export class Socket {
 interface IServerEventCallbacks {
   connection: (socket: Socket) => void;
   error: (error: Error) => void;
+  listen: () => void;
 }
 
 interface IServerEventCallbackParams {
   connection: [Socket];
   error: [Error];
+  listen: [];
 }
 
 export class Server {
   private eventListeners? = {} as IServerEventCallbacks;
 
-  constructor() {}
+  constructor() {
+    console.log("Mocked TCP Server created");
+  }
 
-  on<Event extends keyof IServerEventCallbacks>(
+  on?<Event extends keyof IServerEventCallbacks>(
     event: Event,
     listener: IServerEventCallbacks[Event]
   ) {
     this.eventListeners[event] = listener;
   }
 
-  private call?<Event extends keyof IServerEventCallbacks>(
+  call?<Event extends keyof IServerEventCallbacks>(
     event: Event,
     ...params: IServerEventCallbackParams[Event]
   ) {
@@ -105,11 +111,28 @@ export class Server {
       (<any>this.eventListeners[event])(...params);
   }
 
-  listen(port: number, host: string, listener?: () => void) {
+  listen?(port: number, host: string, listener?: () => void) {
     listener();
   }
 
-  __mockConnection(socket: Socket) {
+  __mockConnection?(from: string, socket: Socket) {
+    socket.__setRemoteIP(from);
     this.call("connection", socket);
   }
+}
+
+export function __setServer(server: Server) {
+  MockedServer = server;
+}
+
+export function createServer(connectionListener: (socket: Socket) => void) {
+  MockedServer.on("connection", connectionListener);
+  return MockedServer;
+}
+
+export interface IMockedNET {
+  TLSSocket: Socket;
+  Server: Server;
+  __setServer?: (server: Server) => void;
+  createServer: (connectionListener: (socket: Socket) => void) => void;
 }

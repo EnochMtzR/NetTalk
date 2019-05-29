@@ -115,7 +115,7 @@ export default class NetTalkConnection {
     return this.socket.remoteAddress;
   }
 
-  get UUID() {
+  get index() {
     return this.id;
   }
 }

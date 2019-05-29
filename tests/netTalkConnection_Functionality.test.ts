@@ -223,7 +223,7 @@ describe("testing NetTalk Connection Functionality", () => {
       });
     });
     describe("testing getters", () => {
-      test("NetTalkConnection.UUID should return provided id", () => {
+      test("NetTalkConnection.index should return provided id", () => {
         const tcpSocket = new tcp.Socket();
         const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
@@ -235,8 +235,8 @@ describe("testing NetTalk Connection Functionality", () => {
         };
         const connection = new NetTalkConnection(options);
 
-        expect(connection.UUID).toBe(6);
-        expect(typeof connection.UUID).toBe("number");
+        expect(connection.index).toBe(6);
+        expect(typeof connection.index).toBe("number");
       });
 
       test("NetTalkConnection.clientIP should return sockets remoteAddress", () => {

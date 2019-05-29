@@ -5,6 +5,7 @@ export const validSSLOptions_noPassword: NetTalkOptions = {
   host: "",
   port: 3000,
   protocol: "PPP",
+  delimiter: "\0",
   ssl: {
     key: path.join(__dirname, "..", "certificates", "key.pem"),
     certificate: path.join(__dirname, "..", "certificates", "server.crt")

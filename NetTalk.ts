@@ -1,7 +1,9 @@
 import * as fs from "fs";
 import * as tls from "tls";
 import * as tcp from "net";
-import NetTalkConnection from "./NetTalkConnection";
+import NetTalkConnection, {
+  INetTalkConnectionOptions
+} from "./NetTalkConnection";
 
 export interface NetTalkOptions {
   host: string;
@@ -24,10 +26,14 @@ export interface NetTalkOptions {
 
 interface IEventCallbacks {
   serverStarted: (serverType: "SSL" | "TCP") => void;
+  connectionReceived: (connection: NetTalkConnection) => void;
+  packageReceived: (connection: NetTalkConnection, data: string) => void;
 }
 
 interface IEventCallbackParams {
   serverStarted: ["SSL" | "TCP"];
+  connectionReceived: [NetTalkConnection];
+  packageReceived: [NetTalkConnection, string];
 }
 
 export default class NetTalk {
@@ -44,6 +50,7 @@ export default class NetTalk {
   };
   private server: tls.Server | tcp.Server;
   private eventCallbacks = {} as IEventCallbacks;
+  private connections = [] as NetTalkConnection[];
 
   constructor(options: NetTalkOptions) {
     try {
@@ -77,11 +84,11 @@ export default class NetTalk {
 
     try {
       this.server = this.ssl
-        ? tls.createServer(serverOptions, this.newSSLConnection)
-        : tcp.createServer(this.newTCPConnection);
+        ? tls.createServer(serverOptions, this.newSSLConnection.bind(this))
+        : tcp.createServer(this.newTCPConnection.bind(this));
 
-      this.server.listen(this.port, this.host, this.listening);
-      this.server.on("error", this.errorHandling);
+      this.server.listen(this.port, this.host, this.listening.bind(this));
+      this.server.on("error", this.errorHandling.bind(this));
     } catch (e) {
       this.errorHandling(e);
     }
@@ -98,14 +105,30 @@ export default class NetTalk {
     event: Event,
     ...params: IEventCallbackParams[Event]
   ) {
-    (<any>this.eventCallbacks[event])(...params);
+    if (this.eventCallbacks[event])
+      (<any>this.eventCallbacks[event])(...params);
   }
 
-  private newSSLConnection = (socket: tls.TLSSocket) => {};
+  private newSSLConnection(socket: tls.TLSSocket) {
+    const options: INetTalkConnectionOptions = {
+      socket: socket,
+      id: this.connections.length,
+      delimiter: this.delimiter,
+      keepAlive: this.keepAlive,
+      timeOut: this.timeOut
+    };
+    const connection = new NetTalkConnection(options);
 
-  private newTCPConnection = (socket: tcp.Socket) => {};
+    connection.on("dataReceived", this.onDataReceived.bind(this));
 
-  private listening = () => {
+    this.connections.push(connection);
+    console.log(`New SSL connection received from ${connection.clientIP}.`);
+    this.call("connectionReceived", connection);
+  }
+
+  private newTCPConnection(socket: tcp.Socket) {}
+
+  private listening() {
     if (this.server instanceof tls.Server) {
       console.info(`Secure server started listening on port ${this.port}`);
       this.call("serverStarted", "SSL");
@@ -113,7 +136,15 @@ export default class NetTalk {
       console.info(`Server started listening on port ${this.port}`);
       this.call("serverStarted", "TCP");
     }
-  };
+  }
+
+  private onDataReceived(connection: NetTalkConnection, data: string) {
+    this.call("packageReceived", connection, data);
+  }
+
+  get currentConnections() {
+    return this.connections;
+  }
 
   get isServerUp() {
     return this.server.listening;
@@ -127,7 +158,7 @@ export default class NetTalk {
     this.server.close();
   }
 
-  private errorHandling = (error: any) => {
+  private errorHandling(error: any) {
     let returnError: Error;
     if (error.message.includes("0B080074")) {
       returnError = new Error("crt and pem files do not match.");
@@ -143,7 +174,7 @@ export default class NetTalk {
       returnError = new Error(error);
     }
     throw returnError;
-  };
+  }
 }
 
 const validateOptions = (options: NetTalkOptions) => {

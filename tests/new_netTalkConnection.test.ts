@@ -39,7 +39,7 @@ describe("testing NetTalkConnection instantiation", () => {
 
       const connection = new NetTalkConnection(options);
       expect(connection).toBeInstanceOf(NetTalkConnection);
-      expect(connection.UUID).toBe(options.id);
+      expect(connection.index).toBe(options.id);
     });
   });
 
@@ -54,7 +54,7 @@ describe("testing NetTalkConnection instantiation", () => {
 
       const connection = new NetTalkConnection(options);
       expect(connection).toBeInstanceOf(NetTalkConnection);
-      expect(connection.UUID).toBe(options.id);
+      expect(connection.index).toBe(options.id);
     });
   });
 });
