@@ -1,4 +1,6 @@
-interface IEventCallbacks {
+import { connect } from "http2";
+
+interface ISocketEventCallbacks {
   data: (data: Buffer) => void;
   timeout: () => void;
   error: (error: Error) => void;
@@ -6,7 +8,7 @@ interface IEventCallbacks {
   end: () => void;
 }
 
-interface IEventCallbackParams {
+interface ISocketEventCallbackParams {
   data: [Buffer];
   timeout: [];
   error: [Error];
@@ -15,7 +17,7 @@ interface IEventCallbackParams {
 }
 
 export class Socket {
-  private eventListeners? = {} as IEventCallbacks;
+  private eventListeners? = {} as ISocketEventCallbacks;
 
   private timer? = 0;
 
@@ -23,16 +25,16 @@ export class Socket {
 
   constructor() {}
 
-  on<Event extends keyof IEventCallbacks>(
+  on<Event extends keyof ISocketEventCallbacks>(
     event: Event,
-    listener: IEventCallbacks[Event]
+    listener: ISocketEventCallbacks[Event]
   ) {
     this.eventListeners[event] = listener;
   }
 
-  private call?<Event extends keyof IEventCallbacks>(
+  private call?<Event extends keyof ISocketEventCallbacks>(
     event: Event,
-    ...params: IEventCallbackParams[Event]
+    ...params: ISocketEventCallbackParams[Event]
   ) {
     if (this.eventListeners[event])
       (<any>this.eventListeners[event])(...params);
@@ -70,5 +72,44 @@ export class Socket {
 
   __emitClientDisconnect?() {
     this.call("end");
+  }
+}
+
+interface IServerEventCallbacks {
+  connection: (socket: Socket) => void;
+  error: (error: Error) => void;
+}
+
+interface IServerEventCallbackParams {
+  connection: [Socket];
+  error: [Error];
+}
+
+export class Server {
+  private eventListeners? = {} as IServerEventCallbacks;
+
+  constructor() {}
+
+  on<Event extends keyof IServerEventCallbacks>(
+    event: Event,
+    listener: IServerEventCallbacks[Event]
+  ) {
+    this.eventListeners[event] = listener;
+  }
+
+  private call?<Event extends keyof IServerEventCallbacks>(
+    event: Event,
+    ...params: IServerEventCallbackParams[Event]
+  ) {
+    if (this.eventListeners[event])
+      (<any>this.eventListeners[event])(...params);
+  }
+
+  listen(port: number, host: string, listener?: () => void) {
+    listener();
+  }
+
+  __mockConnection(socket: Socket) {
+    this.call("connection", socket);
   }
 }
