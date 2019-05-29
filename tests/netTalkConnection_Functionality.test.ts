@@ -88,31 +88,68 @@ describe("testing NetTalk Connection Functionality", () => {
         );
       });
 
-      test("should call dataReceived function when delimiter is send", done => {
-        const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
-        const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
-          id: 3,
-          delimiter: "\0",
-          keepAlive: 3000,
-          timeOut: 1000
-        };
-        const connection = new NetTalkConnection(options);
-        const message = "Message to be send";
+      describe("testing single package", () => {
+        test("should call dataReceived function when delimiter is sent", done => {
+          const tcpSocket = new tcp.Socket();
+          const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+          const options: INetTalkConnectionOptions = {
+            socket: sslSocket as tls.TLSSocket,
+            id: 3,
+            delimiter: "\0",
+            keepAlive: 3000,
+            timeOut: 1000
+          };
+          const connection = new NetTalkConnection(options);
+          const message = "Message to be send";
 
-        function dataReceived(NTConnection: NetTalkConnection, data: String) {
-          expect(NTConnection).toBeInstanceOf(NetTalkConnection);
-          expect(NTConnection).toBe(connection);
-          expect(data).toHaveLength(message.length);
-          expect(data).toBe(message);
+          function dataReceived(NTConnection: NetTalkConnection, data: String) {
+            expect(NTConnection).toBeInstanceOf(NetTalkConnection);
+            expect(NTConnection).toBe(connection);
+            expect(data).toHaveLength(message.length);
+            expect(data).toBe(message);
 
-          done();
-        }
+            done();
+          }
 
-        connection.on("dataReceived", dataReceived);
+          connection.on("dataReceived", dataReceived);
 
-        sslSocket.__emitDataEvent(Buffer.from(`${message}\0`));
+          sslSocket.__emitDataEvent(Buffer.from(`${message}\0`));
+        });
+      });
+
+      describe("testing multiPackage", () => {
+        test("should call dataReceived function until delimiter is sent", done => {
+          const tcpSocket = new tcp.Socket();
+          const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+          const options: INetTalkConnectionOptions = {
+            socket: sslSocket as tls.TLSSocket,
+            id: 3,
+            delimiter: "\0",
+            keepAlive: 3000,
+            timeOut: 1000
+          };
+          const connection = new NetTalkConnection(options);
+          const package1 = "This message ";
+          const package2 = "is being sent";
+          const package3 = "in 3 separate packages";
+
+          function dataReceived(NTConnection: NetTalkConnection, data: String) {
+            expect(NTConnection).toBeInstanceOf(NetTalkConnection);
+            expect(NTConnection).toBe(connection);
+            expect(data).toHaveLength(
+              package1.length + package2.length + package3.length
+            );
+            expect(data).toBe(`${package1}${package2}${package3}`);
+
+            done();
+          }
+
+          connection.on("dataReceived", dataReceived);
+
+          sslSocket.__emitDataEvent(Buffer.from(package1));
+          sslSocket.__emitDataEvent(Buffer.from(package2));
+          sslSocket.__emitDataEvent(Buffer.from(`${package3}\0`));
+        });
       });
 
       test("should not call dataReceived when not bound", done => {

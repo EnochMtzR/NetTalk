@@ -28,6 +28,7 @@ export default class NetTalkConnection {
   private id: number;
   private delimiter: string;
   private eventCallbacks = {} as IEventCallbacks;
+  private currentMessage = "";
 
   constructor(options: INetTalkConnectionOptions) {
     validateParametters(options.socket);
@@ -61,12 +62,14 @@ export default class NetTalkConnection {
   }
 
   private onDataReceived(data: Buffer) {
+    this.currentMessage = `${this.currentMessage}${data.toString("utf8")}`;
     if (data.readInt8(data.length - 1) === this.delimiter.charCodeAt(0)) {
       this.call(
         "dataReceived",
         this,
-        data.toString("utf8", 0, data.length - 1)
+        this.currentMessage.substring(0, this.currentMessage.length - 1)
       );
+      this.currentMessage = "";
     }
   }
 
