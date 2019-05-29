@@ -47,6 +47,10 @@ export class Socket {
 
   destroy() {}
 
+  __setRemoteIP?(address: string) {
+    this.remoteAddress = address;
+  }
+
   __connectMocked?() {
     if (this.timer) setTimeout(this.eventListeners.timeout, this.timer);
   }

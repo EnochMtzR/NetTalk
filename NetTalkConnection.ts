@@ -111,6 +111,10 @@ export default class NetTalkConnection {
     this.call("clientDisconnected", this);
   }
 
+  get clientIP() {
+    return this.socket.remoteAddress;
+  }
+
   get UUID() {
     return this.id;
   }

@@ -222,5 +222,40 @@ describe("testing NetTalk Connection Functionality", () => {
         sslSocket.__emitClientDisconnect();
       });
     });
+    describe("testing getters", () => {
+      test("NetTalkConnection.UUID should return provided id", () => {
+        const tcpSocket = new tcp.Socket();
+        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const options: INetTalkConnectionOptions = {
+          socket: sslSocket as tls.TLSSocket,
+          id: 6,
+          delimiter: "\0",
+          keepAlive: 3000,
+          timeOut: 1000
+        };
+        const connection = new NetTalkConnection(options);
+
+        expect(connection.UUID).toBe(6);
+        expect(typeof connection.UUID).toBe("number");
+      });
+
+      test("NetTalkConnection.clientIP should return sockets remoteAddress", () => {
+        const tcpSocket = new tcp.Socket();
+        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const options: INetTalkConnectionOptions = {
+          socket: sslSocket as tls.TLSSocket,
+          id: 6,
+          delimiter: "\0",
+          keepAlive: 3000,
+          timeOut: 1000
+        };
+        const connection = new NetTalkConnection(options);
+
+        sslSocket.__setRemoteIP("192.168.1.255");
+
+        expect(connection.clientIP).toBe("192.168.1.255");
+        expect(typeof connection.clientIP).toBe("string");
+      });
+    });
   });
 });
