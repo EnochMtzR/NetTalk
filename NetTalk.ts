@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as tls from "tls";
 import * as tcp from "net";
+import * as generateUUID from "uuid/v4";
 import NetTalkConnection, {
   INetTalkConnectionOptions
 } from "./NetTalkConnection";
@@ -28,12 +29,14 @@ interface IEventCallbacks {
   serverStarted: (serverType: "SSL" | "TCP") => void;
   connectionReceived: (connection: NetTalkConnection) => void;
   packageReceived: (connection: NetTalkConnection, data: string) => void;
+  connectionLost: (connection: NetTalkConnection, error?: Error) => void;
 }
 
 interface IEventCallbackParams {
   serverStarted: ["SSL" | "TCP"];
   connectionReceived: [NetTalkConnection];
   packageReceived: [NetTalkConnection, string];
+  connectionLost: [NetTalkConnection, Error?];
 }
 
 export default class NetTalk {
@@ -112,7 +115,7 @@ export default class NetTalk {
   private newSSLConnection(socket: tls.TLSSocket) {
     const options: INetTalkConnectionOptions = {
       socket: socket,
-      id: this.connections.length,
+      id: generateUUID(),
       delimiter: this.delimiter,
       keepAlive: this.keepAlive,
       timeOut: this.timeOut
@@ -120,6 +123,9 @@ export default class NetTalk {
     const connection = new NetTalkConnection(options);
 
     connection.on("dataReceived", this.onDataReceived.bind(this));
+    connection.on("connectionClosed", this.removeConnection.bind(this));
+    connection.on("clientDisconnected", this.removeConnection.bind(this));
+    connection.on("timeOut", this.removeConnection.bind(this));
 
     this.connections.push(connection);
     console.log(`New SSL connection received from ${connection.clientIP}.`);
@@ -140,6 +146,15 @@ export default class NetTalk {
 
   private onDataReceived(connection: NetTalkConnection, data: string) {
     this.call("packageReceived", connection, data);
+  }
+
+  private removeConnection(closedConnection: NetTalkConnection, error?: Error) {
+    this.connections = this.connections.filter(
+      connection => connection.UUID !== closedConnection.UUID
+    );
+    error
+      ? this.call("connectionLost", closedConnection, error)
+      : this.call("connectionLost", closedConnection);
   }
 
   get currentConnections() {

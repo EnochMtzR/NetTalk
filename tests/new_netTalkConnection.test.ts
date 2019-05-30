@@ -9,7 +9,7 @@ describe("testing NetTalkConnection instantiation", () => {
     //---------------------- NULL SOCKET PROVIDED -------------------------//
     let options = {
       socket: null as any,
-      id: 1,
+      id: "1",
       delimiter: "\0"
     };
 
@@ -19,7 +19,7 @@ describe("testing NetTalkConnection instantiation", () => {
 
     //--------------- INVALID OBJECT FOR SOCKET PROVIDED ------------------//
 
-    options.id = 2;
+    options.id = "2";
     options.socket = new String("invalid Object");
 
     expect(() => {
@@ -33,13 +33,13 @@ describe("testing NetTalkConnection instantiation", () => {
       const sslSocket = new tls.TLSSocket(tcpSocket);
       const options: INetTalkConnectionOptions = {
         socket: sslSocket,
-        id: 3,
+        id: "3",
         delimiter: "|"
       };
 
       const connection = new NetTalkConnection(options);
       expect(connection).toBeInstanceOf(NetTalkConnection);
-      expect(connection.index).toBe(options.id);
+      expect(connection.UUID).toBe(options.id);
     });
   });
 
@@ -48,13 +48,13 @@ describe("testing NetTalkConnection instantiation", () => {
       const tcpSocket = new tcp.Socket();
       const options: INetTalkConnectionOptions = {
         socket: tcpSocket,
-        id: 4,
+        id: "4",
         delimiter: ";"
       };
 
       const connection = new NetTalkConnection(options);
       expect(connection).toBeInstanceOf(NetTalkConnection);
-      expect(connection.index).toBe(options.id);
+      expect(connection.UUID).toBe(options.id);
     });
   });
 });

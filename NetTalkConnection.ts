@@ -17,7 +17,7 @@ interface IEventCallbackParams {
 
 export interface INetTalkConnectionOptions {
   socket: tls.TLSSocket | tcp.Socket;
-  id: number;
+  id: string;
   delimiter?: string;
   timeOut?: number;
   keepAlive?: number;
@@ -25,7 +25,7 @@ export interface INetTalkConnectionOptions {
 
 export default class NetTalkConnection {
   private socket: tls.TLSSocket | tcp.Socket;
-  private id: number;
+  private id: string;
   private delimiter: string;
   private eventCallbacks = {} as IEventCallbacks;
   private currentMessage = "";
@@ -118,7 +118,7 @@ export default class NetTalkConnection {
     return this.socket.remoteAddress;
   }
 
-  get index() {
+  get UUID() {
     return this.id;
   }
 }
