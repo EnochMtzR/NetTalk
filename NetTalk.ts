@@ -10,9 +10,10 @@ export interface NetTalkOptions {
   host: string;
   port: number;
   ssl?: {
-    key: string;
-    certificate: string;
+    key?: string;
+    certificate?: string;
     password?: string;
+    rejectUnauthorized?: boolean;
   };
   protocol: "WPP" | "PPP";
   /**
@@ -51,9 +52,11 @@ export default class NetTalk {
     certificate: "",
     password: ""
   };
+  private rejectUnauthorized: boolean;
   private server: tls.Server | tcp.Server;
   private eventCallbacks = {} as IEventCallbacks;
   private connections = [] as NetTalkConnection[];
+  private connection = {} as NetTalkConnection;
 
   constructor(options: NetTalkOptions) {
     try {
@@ -70,6 +73,7 @@ export default class NetTalk {
         this.ssl.key = options.ssl.key;
         this.ssl.certificate = options.ssl.certificate;
         this.ssl.password = options.ssl.password;
+        this.rejectUnauthorized = options.ssl.rejectUnauthorized;
       } else {
         this.ssl = null;
       }
@@ -92,6 +96,65 @@ export default class NetTalk {
 
       this.server.listen(this.port, this.host, this.listening.bind(this));
       this.server.on("error", this.errorHandling.bind(this));
+    } catch (e) {
+      this.errorHandling(e);
+    }
+  }
+
+  private connect() {
+    const clientOptions: tls.ConnectionOptions = {
+      rejectUnauthorized: this.rejectUnauthorized
+    };
+
+    try {
+      const socket = this.ssl
+        ? tls.connect(this.port, this.host, clientOptions)
+        : tcp.connect(this.port, this.host);
+
+      return new Promise<tls.TLSSocket | tcp.Socket>((resolve, reject) => {
+        socket.setTimeout(this.timeOut);
+
+        socket.on("ready", () => {
+          resolve(socket);
+        });
+
+        socket.on("error", error => {
+          reject(error);
+        });
+      });
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async sendRequest(message: string) {
+    try {
+      const connectionSocket = await this.connect();
+      const connectionOptions: INetTalkConnectionOptions = {
+        socket: connectionSocket,
+        id: generateUUID(),
+        delimiter: this.delimiter,
+        keepAlive: this.keepAlive,
+        timeOut: this.timeOut
+      };
+
+      this.connection = new NetTalkConnection(connectionOptions);
+
+      return new Promise<String>((resolve, reject) => {
+        this.connection.on("dataReceived", (connection, data) => {
+          resolve(data);
+        });
+
+        this.connection.on("timeOut", connection => {
+          reject("Connection timed out.");
+        });
+
+        this.connection.on("connectionClosed", (connection, error: Error) => {
+          reject(error);
+        });
+
+        connectionSocket.write(Buffer.from(`${message}${this.delimiter}`));
+      });
     } catch (e) {
       this.errorHandling(e);
     }
@@ -128,6 +191,7 @@ export default class NetTalk {
     connection.on("timeOut", this.removeConnection.bind(this));
 
     this.connections.push(connection);
+
     console.log(`New SSL connection received from ${connection.clientIP}.`);
     this.call("connectionReceived", connection);
   }
@@ -255,25 +319,27 @@ const validateOptions = (options: NetTalkOptions) => {
   }
 
   if (options.ssl) {
-    if (!options.ssl.certificate || !options.ssl.key) {
-      const error = new Error(
-        `Key and Certificates must be provided when SSL is being used.`
-      );
-      throw error;
-    } else {
-      try {
-        const key = fs.readFileSync(options.ssl.key);
-        const cert = fs.readFileSync(options.ssl.certificate);
-        if (key.length === 0 || cert.length === 0) {
-          const error = new Error(`Key and Certificate must be valid.`);
-          throw error;
-        }
-      } catch (e) {
-        if (e.code) {
-          const error = new Error(`Key or Certificate not found.`);
-          throw error;
-        } else {
-          throw e;
+    if (options.ssl.rejectUnauthorized === undefined) {
+      if (!options.ssl.certificate || !options.ssl.key) {
+        const error = new Error(
+          `Key and Certificates must be provided when SSL is being used.`
+        );
+        throw error;
+      } else {
+        try {
+          const key = fs.readFileSync(options.ssl.key);
+          const cert = fs.readFileSync(options.ssl.certificate);
+          if (key.length === 0 || cert.length === 0) {
+            const error = new Error(`Key and Certificate must be valid.`);
+            throw error;
+          }
+        } catch (e) {
+          if (e.code) {
+            const error = new Error(`Key or Certificate not found.`);
+            throw error;
+          } else {
+            throw e;
+          }
         }
       }
     }

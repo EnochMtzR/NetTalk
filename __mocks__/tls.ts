@@ -28,6 +28,22 @@ export function createServer(
   return MockedServer;
 }
 
+export function connect(port: number, host: string, options: any) {
+  const socket = new TLSSocket();
+  if (!host) throw new Error("Server must be provided.");
+  if (host === "fake-echo-server.com") {
+    socket.__setRemoteIP(host);
+    setTimeout(() => {
+      socket.call("ready");
+    }, 1000);
+  } else {
+    setTimeout(() => {
+      socket.__emitError(new Error("Server could not be reached."));
+    }, 1000);
+  }
+  return socket;
+}
+
 export interface IMockedTLS {
   TLSSocket: TLSSocket;
   Server: Server;

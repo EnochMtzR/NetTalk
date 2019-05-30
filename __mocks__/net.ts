@@ -4,6 +4,7 @@ interface ISocketEventCallbacks {
   error: (error: Error) => void;
   close: (hasError: boolean) => void;
   end: () => void;
+  ready: () => void;
 }
 
 interface ISocketEventCallbackParams {
@@ -12,12 +13,14 @@ interface ISocketEventCallbackParams {
   error: [Error];
   close: [boolean];
   end: [];
+  ready: [];
 }
 
 let MockedServer: Server;
 
 export class Socket {
   private eventListeners? = {} as ISocketEventCallbacks;
+  private timeoutCounter?: NodeJS.Timeout;
 
   private timer? = 0;
 
@@ -51,12 +54,25 @@ export class Socket {
 
   destroy?() {}
 
+  write?(data: Buffer) {
+    this.__connectMocked();
+    if (data.readInt8(data.length - 1) === 0) {
+      this.__emitDataEvent(data);
+      this.__emitClientDisconnect();
+    } else if (
+      data.toString("utf8", 0, data.length - 1) === "Error in sending"
+    ) {
+      this.__emitError(new Error("Connection was lost."));
+    }
+  }
+
   __setRemoteIP?(address: string) {
     this.remoteAddress = address;
   }
 
   __connectMocked?() {
-    if (this.timer) setTimeout(this.eventListeners.timeout, this.timer);
+    if (this.timer)
+      this.timeoutCounter = setTimeout(this.eventListeners.timeout, this.timer);
   }
 
   __emitDataEvent?(data: Buffer) {
@@ -69,10 +85,12 @@ export class Socket {
   }
 
   __emitClose?() {
+    clearTimeout(this.timeoutCounter);
     this.call("close", false);
   }
 
   __emitClientDisconnect?() {
+    clearTimeout(this.timeoutCounter);
     this.call("end");
   }
 }
@@ -128,6 +146,20 @@ export function __setServer(server: Server) {
 export function createServer(connectionListener: (socket: Socket) => void) {
   MockedServer.on("connection", connectionListener);
   return MockedServer;
+}
+
+export function connect(port: number, host: string) {
+  const socket = new Socket();
+  if (!host) throw new Error("Server must be provided.");
+  if (host === "fake-echo-server.com") {
+    socket.__setRemoteIP(host);
+    setTimeout(() => {
+      socket.call("ready");
+    }, 1000);
+  } else {
+    throw new Error("Server could not be reached.");
+  }
+  return socket;
 }
 
 export interface IMockedNET {

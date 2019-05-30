@@ -23,6 +23,17 @@ export const validSSLOptions_Password: NetTalkOptions = {
   }
 };
 
+export const validSSLClientOptions: NetTalkOptions = {
+  host: "fake-echo-server.com",
+  port: 3000,
+  protocol: "PPP",
+  ssl: {
+    rejectUnauthorized: false
+  },
+  delimiter: "\0",
+  timeOut: 3000
+};
+
 export const invalidSSLOptions_unmatchingKeyAndCert: NetTalkOptions = {
   host: "",
   port: 3000,
@@ -58,4 +69,12 @@ export const validTCPOptions: NetTalkOptions = {
   host: "",
   port: 3000,
   protocol: "PPP"
+};
+
+export const validTCPClientOptions: NetTalkOptions = {
+  host: "fake-echo-server.com",
+  port: 3000,
+  protocol: "PPP",
+  delimiter: "\0",
+  timeOut: 3000
 };
