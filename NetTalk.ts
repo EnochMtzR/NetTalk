@@ -132,7 +132,25 @@ export default class NetTalk {
     this.call("connectionReceived", connection);
   }
 
-  private newTCPConnection(socket: tcp.Socket) {}
+  private newTCPConnection(socket: tcp.Socket) {
+    const options: INetTalkConnectionOptions = {
+      socket: socket,
+      id: generateUUID(),
+      delimiter: this.delimiter,
+      keepAlive: this.keepAlive,
+      timeOut: this.timeOut
+    };
+    const connection = new NetTalkConnection(options);
+
+    connection.on("dataReceived", this.onDataReceived.bind(this));
+    connection.on("connectionClosed", this.removeConnection.bind(this));
+    connection.on("clientDisconnected", this.removeConnection.bind(this));
+    connection.on("timeOut", this.removeConnection.bind(this));
+
+    this.connections.push(connection);
+    console.log(`New TCP connection received from ${connection.clientIP}.`);
+    this.call("connectionReceived", connection);
+  }
 
   private listening() {
     if (this.server instanceof tls.Server) {

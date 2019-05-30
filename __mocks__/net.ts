@@ -131,7 +131,7 @@ export function createServer(connectionListener: (socket: Socket) => void) {
 }
 
 export interface IMockedNET {
-  TLSSocket: Socket;
+  Socket: Socket;
   Server: Server;
   __setServer?: (server: Server) => void;
   createServer: (connectionListener: (socket: Socket) => void) => void;
