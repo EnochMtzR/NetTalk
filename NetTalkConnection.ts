@@ -63,14 +63,14 @@ export default class NetTalkConnection {
 
   private onDataReceived(data: Buffer) {
     this.currentMessage = `${this.currentMessage}${data.toString("utf8")}`;
-    if (data.readInt8(data.length - 1) === this.delimiter.charCodeAt(0)) {
-      this.call(
-        "dataReceived",
-        this,
-        this.currentMessage.substring(0, this.currentMessage.length - 1)
-      );
+    if (this.isDataComplete(data)) {
+      this.call("dataReceived", this, this.currentMessage.slice(0, -1));
       this.currentMessage = "";
     }
+  }
+
+  private isDataComplete(data: Buffer) {
+    return data.readInt8(data.length - 1) === this.delimiter.charCodeAt(0);
   }
 
   private onTimeOut() {
@@ -83,9 +83,7 @@ export default class NetTalkConnection {
 
   private onError(error: Error) {
     console.error(
-      `Error on connection No. ${this.id} (${
-        this.socket.remoteAddress
-      })\n${error}`
+      `Error on connection No. ${this.id} (${this.socket.remoteAddress})\n${error}`
     );
     this.call("connectionClosed", this, error);
   }
@@ -93,16 +91,12 @@ export default class NetTalkConnection {
   private onClosed(withError: boolean) {
     if (!withError) {
       console.info(
-        `Connection No. ${this.id} (${
-          this.socket.remoteAddress
-        }) has been terminated.`
+        `Connection No. ${this.id} (${this.socket.remoteAddress}) has been terminated.`
       );
       this.call("connectionClosed", this);
     } else {
       console.warn(
-        `Connection No. ${this.id} (${
-          this.socket.remoteAddress
-        }) has closed with errors."`
+        `Connection No. ${this.id} (${this.socket.remoteAddress}) has closed with errors."`
       );
     }
   }
