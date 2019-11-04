@@ -61,6 +61,12 @@ export default class NetTalkConnection {
       (<any>this.eventCallbacks[event])(...params);
   }
 
+  send(data: string) {
+    this.socket.write(Buffer.from(`${data}${this.delimiter}`), error => {
+      this.onError(error);
+    });
+  }
+
   private onDataReceived(data: Buffer) {
     this.currentMessage = `${this.currentMessage}${data.toString("utf8")}`;
     if (this.isDataComplete(data)) {

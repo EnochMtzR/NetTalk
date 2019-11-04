@@ -181,6 +181,52 @@ describe("testing NetTalk Connection Functionality", () => {
       });
     });
 
+    describe("testing data send functionality", () => {
+      test("Should receive data when sent", done => {
+        const tcpSocket = new tcp.Socket();
+        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const options: INetTalkConnectionOptions = {
+          socket: sslSocket as tls.TLSSocket,
+          id: "34",
+          delimiter: "\0"
+        };
+        const connection = new NetTalkConnection(options);
+        const data = "Data to be received.";
+
+        function dataReceived(receivedData: Buffer) {
+          const stringData = receivedData.toString("utf8");
+          expect(stringData).toBe(`${data}${options.delimiter}`);
+          done();
+        }
+
+        sslSocket.on("data", dataReceived);
+
+        connection.send(data);
+      });
+
+      test("should throw error when data couldn't be send", done => {
+        const tcpSocket = new tcp.Socket();
+        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const options: INetTalkConnectionOptions = {
+          socket: sslSocket as tls.TLSSocket,
+          id: "1",
+          delimiter: "\0"
+        };
+        const connection = new NetTalkConnection(options);
+        const data = "Error in sending";
+
+        function errorRecieved(connection: NetTalkConnection, error: Error) {
+          expect(connection.UUID).toBe(options.id);
+          expect(error).toEqual(new Error("Package could not be sent!"));
+          done();
+        }
+
+        connection.on("connectionClosed", errorRecieved);
+
+        connection.send(data);
+      });
+    });
+
     describe("testing close Connection functionality", () => {
       test("should call close callback with Error when error is thrown", done => {
         const tcpSocket = new tcp.Socket();

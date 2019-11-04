@@ -54,9 +54,13 @@ export class Socket {
 
   destroy?() {}
 
-  write?(data: Buffer) {
+  write?(data: Buffer, callBack?: (error: Error) => void) {
     this.__connectMocked();
     if (data.readInt8(data.length - 1) === 0) {
+      if (data.toString("utf8") === "Error in sending\0") {
+        callBack(new Error("Package could not be sent!"));
+        return;
+      }
       this.__emitDataEvent(data);
       this.__emitClientDisconnect();
     } else if (
