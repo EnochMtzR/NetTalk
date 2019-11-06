@@ -47,6 +47,6 @@ export function connect(port: number, host: string, options: any) {
 export interface IMockedTLS {
   TLSSocket: TLSSocket;
   Server: Server;
-  __setServer?: (server: Server) => void;
+  __setServer: (server: Server) => void;
   createServer: (connectionListener: (socket: Socket) => void) => void;
 }

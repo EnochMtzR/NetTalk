@@ -1,10 +1,9 @@
-import NetTalkConnection, {
-  INetTalkConnectionOptions
-} from "../NetTalkConnection";
+import NetTalkConnection from "../NetTalkConnection";
 import * as MockedTLS from "../__mocks__/tls";
 import * as MockedTCP from "../__mocks__/net";
 import * as tcp from "net";
 import * as tls from "tls";
+import { INetTalkConnectionOptions } from "../types";
 
 jest.mock("net");
 jest.mock("tls");
@@ -14,9 +13,11 @@ describe("testing NetTalk Connection Functionality", () => {
     describe("testing timeOut Functionality", () => {
       test("should not call timedOut when timeOut option not provided", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "1",
           keepAlive: 3000
         };
@@ -37,9 +38,11 @@ describe("testing NetTalk Connection Functionality", () => {
 
       test("should call timeOut when timedOut", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "1",
           keepAlive: 3000,
           timeOut: 1000
@@ -63,9 +66,11 @@ describe("testing NetTalk Connection Functionality", () => {
     describe("testing data reception functionality", () => {
       test("should not call dataReceived function, when no delimiter is send", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "2",
           delimiter: "\0",
           keepAlive: 3000,
@@ -92,9 +97,11 @@ describe("testing NetTalk Connection Functionality", () => {
       describe("testing single package", () => {
         test("should call dataReceived function when delimiter is sent", done => {
           const tcpSocket = new tcp.Socket();
-          const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+          const sslSocket = (new tls.TLSSocket(
+            tcpSocket
+          ) as unknown) as MockedTLS.TLSSocket;
           const options: INetTalkConnectionOptions = {
-            socket: sslSocket as tls.TLSSocket,
+            socket: (sslSocket as unknown) as tls.TLSSocket,
             id: "3",
             delimiter: "\0",
             keepAlive: 3000,
@@ -121,9 +128,11 @@ describe("testing NetTalk Connection Functionality", () => {
       describe("testing multiPackage", () => {
         test("should call dataReceived function until delimiter is sent", done => {
           const tcpSocket = new tcp.Socket();
-          const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+          const sslSocket = (new tls.TLSSocket(
+            tcpSocket
+          ) as unknown) as MockedTLS.TLSSocket;
           const options: INetTalkConnectionOptions = {
-            socket: sslSocket as tls.TLSSocket,
+            socket: (sslSocket as unknown) as tls.TLSSocket,
             id: "3",
             delimiter: "\0",
             keepAlive: 3000,
@@ -155,9 +164,11 @@ describe("testing NetTalk Connection Functionality", () => {
 
       test("should not call dataReceived when not bound", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "4",
           delimiter: "\0",
           keepAlive: 3000,
@@ -184,9 +195,11 @@ describe("testing NetTalk Connection Functionality", () => {
     describe("testing data send functionality", () => {
       test("Should receive data when sent", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "34",
           delimiter: "\0"
         };
@@ -206,16 +219,18 @@ describe("testing NetTalk Connection Functionality", () => {
 
       test("should throw error when data couldn't be send", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "1",
           delimiter: "\0"
         };
         const connection = new NetTalkConnection(options);
         const data = "Error in sending";
 
-        function errorRecieved(connection: NetTalkConnection, error: Error) {
+        function errorRecieved(connection: NetTalkConnection, error?: Error) {
           expect(connection.UUID).toBe(options.id);
           expect(error).toEqual(new Error("Package could not be sent!"));
           done();
@@ -230,9 +245,11 @@ describe("testing NetTalk Connection Functionality", () => {
     describe("testing close Connection functionality", () => {
       test("should call close callback with Error when error is thrown", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "5",
           delimiter: "\0",
           keepAlive: 3000,
@@ -244,7 +261,7 @@ describe("testing NetTalk Connection Functionality", () => {
 
         function onConnectionClosed(
           NTConnection: NetTalkConnection,
-          error: Error
+          error?: Error
         ) {
           expect(NTConnection).toBeInstanceOf(NetTalkConnection);
           expect(NTConnection).toBe(connection);
@@ -261,9 +278,11 @@ describe("testing NetTalk Connection Functionality", () => {
 
       test("should call close callback with no Error when no error is thrown", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "5",
           delimiter: "\0",
           keepAlive: 3000,
@@ -284,9 +303,11 @@ describe("testing NetTalk Connection Functionality", () => {
 
       test("should call onClientDisconnected when client has disconnected", done => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "5",
           delimiter: "\0",
           keepAlive: 3000,
@@ -309,9 +330,11 @@ describe("testing NetTalk Connection Functionality", () => {
     describe("testing getters", () => {
       test("NetTalkConnection.index should return provided id", () => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "6",
           delimiter: "\0",
           keepAlive: 3000,
@@ -325,9 +348,11 @@ describe("testing NetTalk Connection Functionality", () => {
 
       test("NetTalkConnection.clientIP should return sockets remoteAddress", () => {
         const tcpSocket = new tcp.Socket();
-        const sslSocket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
         const options: INetTalkConnectionOptions = {
-          socket: sslSocket as tls.TLSSocket,
+          socket: (sslSocket as unknown) as tls.TLSSocket,
           id: "6",
           delimiter: "\0",
           keepAlive: 3000,
@@ -346,9 +371,9 @@ describe("testing NetTalk Connection Functionality", () => {
   describe("testing tcp", () => {
     describe("testing timeOut Functionality", () => {
       test("should not call timedOut when timeOut option not provided", done => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "1",
           keepAlive: 3000
         };
@@ -368,9 +393,9 @@ describe("testing NetTalk Connection Functionality", () => {
       });
 
       test("should call timeOut when timedOut", done => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "1",
           keepAlive: 3000,
           timeOut: 1000
@@ -393,9 +418,9 @@ describe("testing NetTalk Connection Functionality", () => {
 
     describe("testing data reception functionality", () => {
       test("should not call dataReceived function, when no delimiter is send", done => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "2",
           delimiter: "\0",
           keepAlive: 3000,
@@ -421,9 +446,9 @@ describe("testing NetTalk Connection Functionality", () => {
 
       describe("testing single package", () => {
         test("should call dataReceived function when delimiter is sent", done => {
-          const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+          const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
           const options: INetTalkConnectionOptions = {
-            socket: tcpSocket as tcp.Socket,
+            socket: (tcpSocket as unknown) as tcp.Socket,
             id: "3",
             delimiter: "\0",
             keepAlive: 3000,
@@ -449,9 +474,9 @@ describe("testing NetTalk Connection Functionality", () => {
 
       describe("testing multiPackage", () => {
         test("should call dataReceived function until delimiter is sent", done => {
-          const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+          const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
           const options: INetTalkConnectionOptions = {
-            socket: tcpSocket as tcp.Socket,
+            socket: (tcpSocket as unknown) as tcp.Socket,
             id: "3",
             delimiter: "\0",
             keepAlive: 3000,
@@ -482,9 +507,9 @@ describe("testing NetTalk Connection Functionality", () => {
       });
 
       test("should not call dataReceived when not bound", done => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "4",
           delimiter: "\0",
           keepAlive: 3000,
@@ -510,9 +535,9 @@ describe("testing NetTalk Connection Functionality", () => {
 
     describe("testing close Connection functionality", () => {
       test("should call close callback with Error when error is thrown", done => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "5",
           delimiter: "\0",
           keepAlive: 3000,
@@ -524,7 +549,7 @@ describe("testing NetTalk Connection Functionality", () => {
 
         function onConnectionClosed(
           NTConnection: NetTalkConnection,
-          error: Error
+          error?: Error
         ) {
           expect(NTConnection).toBeInstanceOf(NetTalkConnection);
           expect(NTConnection).toBe(connection);
@@ -540,9 +565,9 @@ describe("testing NetTalk Connection Functionality", () => {
       });
 
       test("should call close callback with no Error when no error is thrown", done => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "5",
           delimiter: "\0",
           keepAlive: 3000,
@@ -562,9 +587,9 @@ describe("testing NetTalk Connection Functionality", () => {
       });
 
       test("should call onClientDisconnected when client has disconnected", done => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "5",
           delimiter: "\0",
           keepAlive: 3000,
@@ -586,9 +611,9 @@ describe("testing NetTalk Connection Functionality", () => {
     });
     describe("testing getters", () => {
       test("NetTalkConnection.index should return provided id", () => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "6",
           delimiter: "\0",
           keepAlive: 3000,
@@ -601,9 +626,9 @@ describe("testing NetTalk Connection Functionality", () => {
       });
 
       test("NetTalkConnection.clientIP should return sockets remoteAddress", () => {
-        const tcpSocket = new tcp.Socket() as MockedTCP.Socket;
+        const tcpSocket = (new tcp.Socket() as unknown) as MockedTCP.Socket;
         const options: INetTalkConnectionOptions = {
-          socket: tcpSocket as tcp.Socket,
+          socket: (tcpSocket as unknown) as tcp.Socket,
           id: "6",
           delimiter: "\0",
           keepAlive: 3000,

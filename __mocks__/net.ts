@@ -19,10 +19,10 @@ interface ISocketEventCallbackParams {
 let MockedServer: Server;
 
 export class Socket {
-  private eventListeners? = {} as ISocketEventCallbacks;
+  private eventListeners = {} as ISocketEventCallbacks;
   private timeoutCounter?: NodeJS.Timeout;
 
-  private timer? = 0;
+  private timer = 0;
 
   remoteAddress? = "127.0.0.1";
 
@@ -30,14 +30,14 @@ export class Socket {
     console.log("Mocked TCP Socket created");
   }
 
-  on?<Event extends keyof ISocketEventCallbacks>(
+  on<Event extends keyof ISocketEventCallbacks>(
     event: Event,
     listener: ISocketEventCallbacks[Event]
   ) {
     this.eventListeners[event] = listener;
   }
 
-  call?<Event extends keyof ISocketEventCallbacks>(
+  call<Event extends keyof ISocketEventCallbacks>(
     event: Event,
     ...params: ISocketEventCallbackParams[Event]
   ) {
@@ -45,20 +45,20 @@ export class Socket {
       (<any>this.eventListeners[event])(...params);
   }
 
-  setKeepAlive?(activated: boolean, time: number) {}
+  setKeepAlive(activated: boolean, time: number) {}
 
-  setTimeout?(time: number, callback?: () => void) {
+  setTimeout(time: number, callback?: () => void) {
     this.timer = time;
-    this.eventListeners.timeout = callback;
+    if (callback) this.eventListeners.timeout = callback;
   }
 
-  destroy?() {}
+  destroy() {}
 
-  write?(data: Buffer, callBack?: (error: Error) => void) {
+  write(data: Buffer, callBack?: (error: Error) => void) {
     this.__connectMocked();
     if (data.readInt8(data.length - 1) === 0) {
       if (data.toString("utf8") === "Error in sending\0") {
-        callBack(new Error("Package could not be sent!"));
+        if (callBack) callBack(new Error("Package could not be sent!"));
         return;
       }
       this.__emitDataEvent(data);
@@ -70,31 +70,31 @@ export class Socket {
     }
   }
 
-  __setRemoteIP?(address: string) {
+  __setRemoteIP(address: string) {
     this.remoteAddress = address;
   }
 
-  __connectMocked?() {
+  __connectMocked() {
     if (this.timer)
       this.timeoutCounter = setTimeout(this.eventListeners.timeout, this.timer);
   }
 
-  __emitDataEvent?(data: Buffer) {
+  __emitDataEvent(data: Buffer) {
     this.call("data", data);
   }
 
-  __emitError?(error: Error) {
+  __emitError(error: Error) {
     this.call("error", error);
     this.call("close", true);
   }
 
-  __emitClose?() {
-    clearTimeout(this.timeoutCounter);
+  __emitClose() {
+    if (this.timeoutCounter) clearTimeout(this.timeoutCounter);
     this.call("close", false);
   }
 
-  __emitClientDisconnect?() {
-    clearTimeout(this.timeoutCounter);
+  __emitClientDisconnect() {
+    if (this.timeoutCounter) clearTimeout(this.timeoutCounter);
     this.call("end");
   }
 }
@@ -112,20 +112,20 @@ interface IServerEventCallbackParams {
 }
 
 export class Server {
-  private eventListeners? = {} as IServerEventCallbacks;
+  private eventListeners = {} as IServerEventCallbacks;
 
   constructor() {
     console.log("Mocked TCP Server created");
   }
 
-  on?<Event extends keyof IServerEventCallbacks>(
+  on<Event extends keyof IServerEventCallbacks>(
     event: Event,
     listener: IServerEventCallbacks[Event]
   ) {
     this.eventListeners[event] = listener;
   }
 
-  call?<Event extends keyof IServerEventCallbacks>(
+  call<Event extends keyof IServerEventCallbacks>(
     event: Event,
     ...params: IServerEventCallbackParams[Event]
   ) {
@@ -133,11 +133,11 @@ export class Server {
       (<any>this.eventListeners[event])(...params);
   }
 
-  listen?(port: number, host: string, listener?: () => void) {
-    listener();
+  listen(port: number, host: string, listener?: () => void) {
+    if (listener) listener();
   }
 
-  __mockConnection?(from: string, socket: Socket) {
+  __mockConnection(from: string, socket: Socket) {
     socket.__setRemoteIP(from);
     this.call("connection", socket);
   }
@@ -169,6 +169,6 @@ export function connect(port: number, host: string) {
 export interface IMockedNET {
   Socket: Socket;
   Server: Server;
-  __setServer?: (server: Server) => void;
+  __setServer: (server: Server) => void;
   createServer: (connectionListener: (socket: Socket) => void) => void;
 }

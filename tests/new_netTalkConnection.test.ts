@@ -1,8 +1,7 @@
-import NetTalkConnection, {
-  INetTalkConnectionOptions
-} from "../NetTalkConnection";
+import NetTalkConnection from "../NetTalkConnection";
 import * as tls from "tls";
 import * as tcp from "net";
+import { INetTalkConnectionOptions } from "../types";
 
 describe("testing NetTalkConnection instantiation", () => {
   test("should throw error when invalid socket is provided", () => {

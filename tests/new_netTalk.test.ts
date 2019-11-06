@@ -1,11 +1,12 @@
 import * as path from "path";
-import NetTalk, { NetTalkOptions } from "../NetTalk";
+import NetTalk from "../NetTalk";
 import * as fixtures from "./fixtures/NetTalkOptions.fixture";
+import { NetTalkOptions } from "../types";
 
 describe("Testing NetTalk Instantiation", () => {
   test("should throw error when no options are provided", () => {
     expect(() => {
-      new NetTalk(null);
+      new NetTalk(null as any);
     }).toThrow("Options must be provided.");
   });
 
@@ -13,8 +14,8 @@ describe("Testing NetTalk Instantiation", () => {
     test("1. Invalid Typeof host", () => {
       expect(() => {
         const options: NetTalkOptions = {
-          host: 23 as null,
-          port: null,
+          host: 23 as any,
+          port: null as any,
           protocol: "WPP"
         };
 
@@ -26,7 +27,7 @@ describe("Testing NetTalk Instantiation", () => {
       expect(() => {
         const options: NetTalkOptions = {
           host: "",
-          port: null,
+          port: null as any,
           protocol: "WPP"
         };
 
@@ -48,7 +49,7 @@ describe("Testing NetTalk Instantiation", () => {
       expect(() => {
         const options: NetTalkOptions = {
           host: "",
-          port: "23" as null,
+          port: "23" as any,
           protocol: "WPP"
         };
 
@@ -61,7 +62,7 @@ describe("Testing NetTalk Instantiation", () => {
         const options: NetTalkOptions = {
           host: "localhost",
           port: 56,
-          protocol: null
+          protocol: null as any
         };
 
         new NetTalk(options);
@@ -71,7 +72,7 @@ describe("Testing NetTalk Instantiation", () => {
         const options: NetTalkOptions = {
           host: "localhost",
           port: 56,
-          protocol: "" as null
+          protocol: "" as any
         };
 
         new NetTalk(options);
@@ -109,7 +110,7 @@ describe("Testing NetTalk Instantiation", () => {
           host: "localhost",
           port: 56,
           protocol: "WPP",
-          ssl: {} as null
+          ssl: {} as any
         };
 
         new NetTalk(options);
@@ -123,7 +124,7 @@ describe("Testing NetTalk Instantiation", () => {
           port: 56,
           protocol: "WPP",
           ssl: {
-            key: null,
+            key: null as any,
             certificate: "some Cert"
           }
         };
@@ -156,7 +157,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: "WPP",
           ssl: {
             key: "Some Key",
-            certificate: null
+            certificate: null as any
           }
         };
 

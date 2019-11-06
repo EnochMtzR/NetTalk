@@ -14,10 +14,12 @@ describe("Testing NetTalk's functionality", () => {
     describe("testing Server's functionality", () => {
       describe("testing newConnections functionality", () => {
         test("should call on new connection when connection received", done => {
-          const sslServer = new tls.Server() as MockedTLS.Server;
+          const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
           const server = new NetTalk(fixtures.validSSLOptions_Password);
           const tcpSocket = new tcp.Socket();
-          const socket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+          const socket = (new tls.TLSSocket(
+            tcpSocket
+          ) as unknown) as MockedTLS.TLSSocket;
           const clientIP = "192.168.1.00";
 
           function onNewConnection(connection: NetTalkConnection) {
@@ -29,7 +31,7 @@ describe("Testing NetTalk's functionality", () => {
             done();
           }
 
-          (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+          (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
           server.on("connectionReceived", onNewConnection);
           server.startServer();
@@ -38,11 +40,15 @@ describe("Testing NetTalk's functionality", () => {
         });
 
         test("should return connected sockets on get currentConnections()", done => {
-          const sslServer = new tls.Server() as MockedTLS.Server;
+          const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
           const server = new NetTalk(fixtures.validSSLOptions_Password);
           const tcpSocket = new tcp.Socket();
-          const socket1 = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
-          const socket2 = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+          const socket1 = (new tls.TLSSocket(
+            tcpSocket
+          ) as unknown) as MockedTLS.TLSSocket;
+          const socket2 = (new tls.TLSSocket(
+            tcpSocket
+          ) as unknown) as MockedTLS.TLSSocket;
           let connectionCounter = 0;
 
           function onNewConnection() {
@@ -63,7 +69,7 @@ describe("Testing NetTalk's functionality", () => {
             }
           }
 
-          (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+          (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
           server.on("connectionReceived", onNewConnection);
           server.startServer();
@@ -76,10 +82,12 @@ describe("Testing NetTalk's functionality", () => {
       describe("testing data reception functionality", () => {
         describe("testing single package reception", () => {
           test("should call onPackageReceived when delimiter is received", done => {
-            const sslServer = new tls.Server() as MockedTLS.Server;
+            const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
             const server = new NetTalk(fixtures.validSSLOptions_Password);
             const tcpSocket = new tcp.Socket();
-            const socket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+            const socket = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
             const clientIP = "192.168.1.00";
             const message = "This message is being sent in one go.";
             let connectionId: string;
@@ -97,7 +105,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+            (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
             server.on("packageReceived", onPackageReceived);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -112,10 +120,12 @@ describe("Testing NetTalk's functionality", () => {
 
         describe("testing multi-package reception", () => {
           test("should call onPackageReceived until delimiter is received", done => {
-            const sslServer = new tls.Server() as MockedTLS.Server;
+            const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
             const server = new NetTalk(fixtures.validSSLOptions_Password);
             const tcpSocket = new tcp.Socket();
-            const socket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+            const socket = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
             const package1 = "This message ";
@@ -135,7 +145,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+            (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
             server.on("packageReceived", onPackageReceived);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -154,10 +164,12 @@ describe("Testing NetTalk's functionality", () => {
       describe("testing connectionLost", () => {
         describe("testing connectionClosed", () => {
           test("should call onConnectionLost when connection is closed by Server", done => {
-            const sslServer = new tls.Server() as MockedTLS.Server;
+            const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
             const server = new NetTalk(fixtures.validSSLOptions_Password);
             const tcpSocket = new tcp.Socket();
-            const socket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+            const socket = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
 
@@ -174,7 +186,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+            (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
             server.on("connectionLost", onConnectionLost);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -187,11 +199,15 @@ describe("Testing NetTalk's functionality", () => {
           });
 
           test("should remove connection when connection is closed", done => {
-            const sslServer = new tls.Server() as MockedTLS.Server;
+            const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
             const server = new NetTalk(fixtures.validSSLOptions_Password);
             const tcpSocket = new tcp.Socket();
-            const socket1 = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
-            const socket2 = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+            const socket1 = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
+            const socket2 = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
             const client1IP = "192.168.1.65";
             const client2IP = "192.168.1.99";
             let connection1Id: string;
@@ -214,7 +230,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+            (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
             server.on("connectionReceived", (connection: NetTalkConnection) => {
               connection1Id
@@ -232,10 +248,12 @@ describe("Testing NetTalk's functionality", () => {
 
         describe("testing client disconnects", () => {
           test("should call onConnectionLost when client close the connection", done => {
-            const sslServer = new tls.Server() as MockedTLS.Server;
+            const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
             const server = new NetTalk(fixtures.validSSLOptions_Password);
             const tcpSocket = new tcp.Socket();
-            const socket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+            const socket = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
 
@@ -252,7 +270,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+            (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
             server.on("connectionLost", onConnectionLost);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -265,11 +283,15 @@ describe("Testing NetTalk's functionality", () => {
           });
 
           test("should remove connection when client severs the connection", done => {
-            const sslServer = new tls.Server() as MockedTLS.Server;
+            const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
             const server = new NetTalk(fixtures.validSSLOptions_Password);
             const tcpSocket = new tcp.Socket();
-            const socket1 = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
-            const socket2 = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+            const socket1 = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
+            const socket2 = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
             const client1IP = "192.168.1.65";
             const client2IP = "192.168.1.99";
             let connection1Id: string;
@@ -292,7 +314,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+            (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
             server.on("connectionReceived", (connection: NetTalkConnection) => {
               connection1Id
@@ -310,10 +332,12 @@ describe("Testing NetTalk's functionality", () => {
 
         describe("testing error in socket", () => {
           test("should call onConnectionLost when error is found on connection", done => {
-            const sslServer = new tls.Server() as MockedTLS.Server;
+            const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
             const server = new NetTalk(fixtures.validSSLOptions_Password);
             const tcpSocket = new tcp.Socket();
-            const socket = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+            const socket = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
             const clientIP = "192.168.1.65";
             const sentError = new Error("Error found in connection");
             let connectionId: string;
@@ -331,7 +355,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+            (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
             server.on("connectionLost", onConnectionLost);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -344,11 +368,15 @@ describe("Testing NetTalk's functionality", () => {
           });
 
           test("should remove connection when error is found in connection", done => {
-            const sslServer = new tls.Server() as MockedTLS.Server;
+            const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
             const server = new NetTalk(fixtures.validSSLOptions_Password);
             const tcpSocket = new tcp.Socket();
-            const socket1 = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
-            const socket2 = new tls.TLSSocket(tcpSocket) as MockedTLS.TLSSocket;
+            const socket1 = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
+            const socket2 = (new tls.TLSSocket(
+              tcpSocket
+            ) as unknown) as MockedTLS.TLSSocket;
             const client1IP = "192.168.1.65";
             const client2IP = "192.168.1.99";
             let connection1Id: string;
@@ -372,7 +400,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedTLS.IMockedTLS>tls).__setServer(sslServer);
+            (<MockedTLS.IMockedTLS>(<unknown>tls)).__setServer(sslServer);
 
             server.on("connectionReceived", (connection: NetTalkConnection) => {
               connection1Id
@@ -460,9 +488,9 @@ describe("Testing NetTalk's functionality", () => {
     describe("testing Server's functionality", () => {
       describe("testing newConnections functionality", () => {
         test("should call on new connection when connection received", done => {
-          const tcpServer = new tcp.Server() as MockedNET.Server;
+          const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
           const server = new NetTalk(fixtures.validTCPOptions);
-          const socket = new tcp.Socket() as MockedNET.Socket;
+          const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
           const clientIP = "192.168.1.00";
 
           function onNewConnection(connection: NetTalkConnection) {
@@ -474,7 +502,7 @@ describe("Testing NetTalk's functionality", () => {
             done();
           }
 
-          (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+          (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
           server.on("connectionReceived", onNewConnection);
           server.startServer();
@@ -483,10 +511,10 @@ describe("Testing NetTalk's functionality", () => {
         });
 
         test("should return connected sockets on get currentConnections()", done => {
-          const tcpServer = new tcp.Server() as MockedNET.Server;
+          const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
           const server = new NetTalk(fixtures.validTCPOptions);
-          const socket1 = new tcp.Socket() as MockedNET.Socket;
-          const socket2 = new tcp.Socket() as MockedNET.Socket;
+          const socket1 = (new tcp.Socket() as unknown) as MockedNET.Socket;
+          const socket2 = (new tcp.Socket() as unknown) as MockedNET.Socket;
           let connectionCounter = 0;
 
           function onNewConnection() {
@@ -507,7 +535,7 @@ describe("Testing NetTalk's functionality", () => {
             }
           }
 
-          (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+          (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
           server.on("connectionReceived", onNewConnection);
           server.startServer();
@@ -520,9 +548,9 @@ describe("Testing NetTalk's functionality", () => {
       describe("testing data reception functionality", () => {
         describe("testing single package reception", () => {
           test("should call onPackageReceived when delimiter is received", done => {
-            const tcpServer = new tcp.Server() as MockedNET.Server;
+            const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
             const server = new NetTalk(fixtures.validTCPOptions);
-            const socket = new tcp.Socket() as MockedNET.Socket;
+            const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.00";
             const message = "This message is being sent in one go.";
             let connectionId: string;
@@ -540,7 +568,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+            (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
             server.on("packageReceived", onPackageReceived);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -555,9 +583,9 @@ describe("Testing NetTalk's functionality", () => {
 
         describe("testing multi-package reception", () => {
           test("should call onPackageReceived until delimiter is received", done => {
-            const tcpServer = new tcp.Server() as MockedNET.Server;
+            const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
             const server = new NetTalk(fixtures.validTCPOptions);
-            const socket = new tcp.Socket() as MockedNET.Socket;
+            const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
             const package1 = "This message ";
@@ -577,7 +605,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+            (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
             server.on("packageReceived", onPackageReceived);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -596,9 +624,9 @@ describe("Testing NetTalk's functionality", () => {
       describe("testing connectionLost", () => {
         describe("testing connectionClosed", () => {
           test("should call onConnectionLost when connection is closed by Server", done => {
-            const tcpServer = new tcp.Server() as MockedNET.Server;
+            const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
             const server = new NetTalk(fixtures.validTCPOptions);
-            const socket = new tcp.Socket() as MockedNET.Socket;
+            const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
 
@@ -615,7 +643,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+            (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
             server.on("connectionLost", onConnectionLost);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -628,10 +656,10 @@ describe("Testing NetTalk's functionality", () => {
           });
 
           test("should remove connection when connection is closed", done => {
-            const tcpServer = new tcp.Server() as MockedNET.Server;
+            const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
             const server = new NetTalk(fixtures.validTCPOptions);
-            const socket1 = new tcp.Socket() as MockedNET.Socket;
-            const socket2 = new tcp.Socket() as MockedNET.Socket;
+            const socket1 = (new tcp.Socket() as unknown) as MockedNET.Socket;
+            const socket2 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const client1IP = "192.168.1.65";
             const client2IP = "192.168.1.99";
             let connection1Id: string;
@@ -654,7 +682,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+            (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
             server.on("connectionReceived", (connection: NetTalkConnection) => {
               connection1Id
@@ -672,9 +700,9 @@ describe("Testing NetTalk's functionality", () => {
 
         describe("testing client disconnects", () => {
           test("should call onConnectionLost when client close the connection", done => {
-            const tcpServer = new tcp.Server() as MockedNET.Server;
+            const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
             const server = new NetTalk(fixtures.validTCPOptions);
-            const socket = new tcp.Socket() as MockedNET.Socket;
+            const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
 
@@ -691,7 +719,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+            (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
             server.on("connectionLost", onConnectionLost);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -704,10 +732,10 @@ describe("Testing NetTalk's functionality", () => {
           });
 
           test("should remove connection when client severs the connection", done => {
-            const tcpServer = new tcp.Server() as MockedNET.Server;
+            const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
             const server = new NetTalk(fixtures.validTCPOptions);
-            const socket1 = new tcp.Socket() as MockedNET.Socket;
-            const socket2 = new tcp.Socket() as MockedNET.Socket;
+            const socket1 = (new tcp.Socket() as unknown) as MockedNET.Socket;
+            const socket2 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const client1IP = "192.168.1.65";
             const client2IP = "192.168.1.99";
             let connection1Id: string;
@@ -730,7 +758,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+            (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
             server.on("connectionReceived", (connection: NetTalkConnection) => {
               connection1Id
@@ -748,9 +776,9 @@ describe("Testing NetTalk's functionality", () => {
 
         describe("testing error in socket", () => {
           test("should call onConnectionLost when error is found on connection", done => {
-            const tcpServer = new tcp.Server() as MockedNET.Server;
+            const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
             const server = new NetTalk(fixtures.validTCPOptions);
-            const socket = new tcp.Socket() as MockedNET.Socket;
+            const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.65";
             const sentError = new Error("Error found in connection");
             let connectionId: string;
@@ -768,7 +796,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedNET.IMockedNET>tcp).__setServer(tcpServer);
+            (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(tcpServer);
 
             server.on("connectionLost", onConnectionLost);
             server.on("connectionReceived", (connection: NetTalkConnection) => {
@@ -781,10 +809,10 @@ describe("Testing NetTalk's functionality", () => {
           });
 
           test("should remove connection when error is found in connection", done => {
-            const sslServer = new tcp.Server() as MockedNET.Server;
+            const sslServer = (new tcp.Server() as unknown) as MockedNET.Server;
             const server = new NetTalk(fixtures.validTCPOptions);
-            const socket1 = new tcp.Socket() as MockedNET.Socket;
-            const socket2 = new tcp.Socket() as MockedNET.Socket;
+            const socket1 = (new tcp.Socket() as unknown) as MockedNET.Socket;
+            const socket2 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const client1IP = "192.168.1.65";
             const client2IP = "192.168.1.99";
             let connection1Id: string;
@@ -808,7 +836,7 @@ describe("Testing NetTalk's functionality", () => {
               done();
             }
 
-            (<MockedNET.IMockedNET>tcp).__setServer(sslServer);
+            (<MockedNET.IMockedNET>(<unknown>tcp)).__setServer(sslServer);
 
             server.on("connectionReceived", (connection: NetTalkConnection) => {
               connection1Id
