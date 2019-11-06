@@ -1,59 +1,31 @@
 import * as fs from "fs";
 import * as tls from "tls";
 import * as tcp from "net";
-import * as generateUUID from "uuid/v4";
-import NetTalkConnection, {
+import generateUUID from "uuid/v4";
+import NetTalkConnection from "./NetTalkConnection";
+import {
+  IEventCallbacks,
+  IEventCallbackParams,
+  INetTalk,
+  ISSLProps,
+  NetTalkOptions,
   INetTalkConnectionOptions
-} from "./NetTalkConnection";
+} from "./types";
 
-export interface NetTalkOptions {
-  host: string;
-  port: number;
-  ssl?: {
-    key?: string;
-    certificate?: string;
-    password?: string;
-    rejectUnauthorized?: boolean;
-  };
-  protocol: "WPP" | "PPP";
-  /**
-   * **only when `protocol = "PPP"`**
-   *
-   * Represents the character, previously agreed on, to be sent at the end of a packet to signify the end of that packet.
-   */
-  delimiter?: string;
-  timeOut?: number;
-  keepAlive?: number;
-}
-
-interface IEventCallbacks {
-  serverStarted: (serverType: "SSL" | "TCP") => void;
-  connectionReceived: (connection: NetTalkConnection) => void;
-  packageReceived: (connection: NetTalkConnection, data: string) => void;
-  connectionLost: (connection: NetTalkConnection, error?: Error) => void;
-}
-
-interface IEventCallbackParams {
-  serverStarted: ["SSL" | "TCP"];
-  connectionReceived: [NetTalkConnection];
-  packageReceived: [NetTalkConnection, string];
-  connectionLost: [NetTalkConnection, Error?];
-}
-
-export default class NetTalk {
-  private host: string;
-  private port: number;
-  private protocol: "WPP" | "PPP";
-  private delimiter: string;
-  private timeOut: number;
-  private keepAlive: number;
-  private ssl = {
+export default class NetTalk implements INetTalk {
+  private host!: string;
+  private port!: number;
+  private protocol!: "WPP" | "PPP";
+  private delimiter!: string;
+  private timeOut!: number;
+  private keepAlive!: number;
+  private ssl: ISSLProps | undefined = {
     key: "",
     certificate: "",
     password: ""
   };
-  private rejectUnauthorized: boolean;
-  private server: tls.Server | tcp.Server;
+  private rejectUnauthorized!: boolean;
+  private server!: tls.Server | tcp.Server;
   private eventCallbacks = {} as IEventCallbacks;
   private connections = [] as NetTalkConnection[];
   private connection = {} as NetTalkConnection;
@@ -66,16 +38,16 @@ export default class NetTalk {
       this.port = options.port;
       this.protocol = options.protocol;
       this.delimiter = options.delimiter ? options.delimiter : "\0";
-      this.timeOut = options.timeOut;
-      this.keepAlive = options.keepAlive;
+      this.timeOut = options.timeOut || 0;
+      this.keepAlive = options.keepAlive || 0;
 
-      if (options.ssl) {
-        this.ssl.key = options.ssl.key;
-        this.ssl.certificate = options.ssl.certificate;
-        this.ssl.password = options.ssl.password;
-        this.rejectUnauthorized = options.ssl.rejectUnauthorized;
+      if (options.ssl && this.ssl) {
+        this.ssl.key = options.ssl.key || "";
+        this.ssl.certificate = options.ssl.certificate || "";
+        this.ssl.password = options.ssl.password || "";
+        this.rejectUnauthorized = options.ssl.rejectUnauthorized || false;
       } else {
-        this.ssl = null;
+        this.ssl = undefined;
       }
     } catch (e) {
       this.errorHandling(e);
@@ -127,7 +99,7 @@ export default class NetTalk {
     }
   }
 
-  async sendRequest(message: string) {
+  async sendRequest(request: string) {
     try {
       const connectionSocket = await this.connect();
       const connectionOptions: INetTalkConnectionOptions = {
@@ -141,19 +113,26 @@ export default class NetTalk {
       this.connection = new NetTalkConnection(connectionOptions);
 
       return new Promise<String>((resolve, reject) => {
-        this.connection.on("dataReceived", (connection, data) => {
-          resolve(data);
-        });
+        this.connection.on(
+          "dataReceived",
+          (connection: NetTalkConnection, data: string) => {
+            resolve(data);
+          }
+        );
 
-        this.connection.on("timeOut", connection => {
+        this.connection.on("timeOut", (connection: NetTalkConnection) => {
           reject("Connection timed out.");
         });
 
-        this.connection.on("connectionClosed", (connection, error: Error) => {
-          reject(error);
-        });
+        this.connection.on(
+          "connectionClosed",
+          (connection: NetTalkConnection, error?: Error) => {
+            if (error) reject(error);
+            else reject("Connection Closed!");
+          }
+        );
 
-        connectionSocket.write(Buffer.from(`${message}${this.delimiter}`));
+        connectionSocket.write(Buffer.from(`${request}${this.delimiter}`));
       });
     } catch (e) {
       this.errorHandling(e);
@@ -260,7 +239,7 @@ export default class NetTalk {
     if (error.message.includes("0B080074")) {
       returnError = new Error("crt and pem files do not match.");
     } else if (error.message.includes("06065064")) {
-      if (this.ssl.password) {
+      if (this.ssl && this.ssl.password) {
         returnError = new Error("Wrong password provided for key file");
       } else {
         returnError = new Error(
@@ -302,9 +281,7 @@ const validateOptions = (options: NetTalkOptions) => {
   if (options.protocol) {
     if (options.protocol !== "WPP" && options.protocol !== "PPP") {
       const error = new Error(
-        `Invalid Protocol: must be "WPP" or "PPP", but received ${
-          options.protocol
-        }.`
+        `Invalid Protocol: must be "WPP" or "PPP", but received ${options.protocol}.`
       );
       throw error;
     }

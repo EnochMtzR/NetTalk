@@ -1,33 +1,17 @@
 import * as tls from "tls";
 import * as tcp from "net";
+import {
+  IConEventCallbacks,
+  INetTalkConnectionOptions,
+  IConEventCallbackParams,
+  IConnection
+} from "./types";
 
-interface IEventCallbacks {
-  dataReceived: (connection: NetTalkConnection, data: string) => void;
-  timeOut: (connection: NetTalkConnection) => void;
-  connectionClosed: (connection: NetTalkConnection, error?: Error) => void;
-  clientDisconnected: (connection: NetTalkConnection) => void;
-}
-
-interface IEventCallbackParams {
-  dataReceived: [NetTalkConnection, string];
-  timeOut: [NetTalkConnection];
-  connectionClosed: [NetTalkConnection, Error?];
-  clientDisconnected: [NetTalkConnection];
-}
-
-export interface INetTalkConnectionOptions {
-  socket: tls.TLSSocket | tcp.Socket;
-  id: string;
-  delimiter?: string;
-  timeOut?: number;
-  keepAlive?: number;
-}
-
-export default class NetTalkConnection {
+export default class NetTalkConnection implements IConnection {
   private socket: tls.TLSSocket | tcp.Socket;
   private id: string;
   private delimiter: string;
-  private eventCallbacks = {} as IEventCallbacks;
+  private eventCallbacks = {} as IConEventCallbacks;
   private currentMessage = "";
 
   constructor(options: INetTalkConnectionOptions) {
@@ -46,16 +30,16 @@ export default class NetTalkConnection {
     this.socket.on("end", this.onClientDisconnected.bind(this));
   }
 
-  on<event extends keyof IEventCallbacks>(
+  on<event extends keyof IConEventCallbacks>(
     event: event,
-    listener: IEventCallbacks[event]
+    listener: IConEventCallbacks[event]
   ) {
     this.eventCallbacks[event] = listener;
   }
 
-  private call<Event extends keyof IEventCallbacks>(
+  private call<Event extends keyof IConEventCallbacks>(
     event: Event,
-    ...params: IEventCallbackParams[Event]
+    ...params: IConEventCallbackParams[Event]
   ) {
     if (this.eventCallbacks[event])
       (<any>this.eventCallbacks[event])(...params);
@@ -63,7 +47,7 @@ export default class NetTalkConnection {
 
   send(data: string) {
     this.socket.write(Buffer.from(`${data}${this.delimiter}`), error => {
-      this.onError(error);
+      if (error) this.onError(error);
     });
   }
 
@@ -123,7 +107,7 @@ export default class NetTalkConnection {
   }
 }
 
-const validateParametters = (socket: tls.TLSSocket | tcp.Socket) => {
+const validateParametters = (socket: any) => {
   if (
     !socket ||
     (!(socket instanceof tls.TLSSocket) && !(socket instanceof tcp.Socket))
