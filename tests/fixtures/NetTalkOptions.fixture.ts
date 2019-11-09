@@ -1,5 +1,5 @@
 import * as path from "path";
-import { NetTalkOptions } from "../../NetTalk";
+import { NetTalkOptions } from "../../lib/types";
 
 export const validSSLOptions_noPassword: NetTalkOptions = {
   host: "",

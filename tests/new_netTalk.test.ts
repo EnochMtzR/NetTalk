@@ -1,7 +1,7 @@
 import * as path from "path";
-import NetTalk from "../NetTalk";
+import NetTalk from "../lib/NetTalk";
 import * as fixtures from "./fixtures/NetTalkOptions.fixture";
-import { NetTalkOptions } from "../types";
+import { NetTalkOptions } from "../lib/types";
 
 describe("Testing NetTalk Instantiation", () => {
   test("should throw error when no options are provided", () => {

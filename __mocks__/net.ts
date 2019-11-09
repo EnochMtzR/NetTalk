@@ -54,6 +54,10 @@ export class Socket {
 
   destroy() {}
 
+  end() {
+    this.__emitClose();
+  }
+
   write(data: Buffer, callBack?: (error: Error) => void) {
     this.__connectMocked();
     if (data.readInt8(data.length - 1) === 0) {

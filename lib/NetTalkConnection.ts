@@ -7,10 +7,11 @@ import {
   IConnection
 } from "./types";
 
-export default class NetTalkConnection implements IConnection {
+class NetTalkConnection implements IConnection {
   private socket: tls.TLSSocket | tcp.Socket;
   private id: string;
   private delimiter: string;
+  private log: boolean;
   private eventCallbacks = {} as IConEventCallbacks;
   private currentMessage = "";
 
@@ -19,6 +20,7 @@ export default class NetTalkConnection implements IConnection {
     this.socket = options.socket;
     this.id = options.id;
     this.delimiter = options.delimiter ? options.delimiter : "\0";
+    this.log = options.log || false;
 
     if (options.keepAlive) this.socket.setKeepAlive(true, options.keepAlive);
     if (options.timeOut) this.socket.setTimeout(options.timeOut);
@@ -51,9 +53,19 @@ export default class NetTalkConnection implements IConnection {
     });
   }
 
+  close() {
+    this.socket.end(() => {
+      if (this.log) console.info("Connection successfully closed!");
+    });
+  }
+
   private onDataReceived(data: Buffer) {
+    if (this.log)
+      console.info(`Data received from: ${this.clientIP} (${this.id})`);
     this.currentMessage = `${this.currentMessage}${data.toString("utf8")}`;
     if (this.isDataComplete(data)) {
+      if (this.log)
+        console.info(`Data completed for: ${this.clientIP} (${this.id})`);
       this.call("dataReceived", this, this.currentMessage.slice(0, -1));
       this.currentMessage = "";
     }
@@ -64,37 +76,45 @@ export default class NetTalkConnection implements IConnection {
   }
 
   private onTimeOut() {
-    console.warn(
-      `Connection No. ${this.id} (${this.socket.remoteAddress}) has timedOut`
-    );
+    if (this.id && this.log)
+      console.warn(
+        `Connection No. ${this.id} (${this.socket.remoteAddress}) has timed out!`
+      );
+    else if (this.log) console.warn(`Connection has timed out!`);
     this.call("timeOut", this);
     this.socket.destroy();
   }
 
   private onError(error: Error) {
-    console.error(
-      `Error on connection No. ${this.id} (${this.socket.remoteAddress})\n${error}`
-    );
+    if (this.id && this.log)
+      console.error(
+        `Error on connection No. ${this.id} (${this.socket.remoteAddress})\n${error}`
+      );
+    else if (this.log) console.error(`Error:\n${error}`);
     this.call("connectionClosed", this, error);
   }
 
   private onClosed(withError: boolean) {
     if (!withError) {
-      console.info(
-        `Connection No. ${this.id} (${this.socket.remoteAddress}) has been terminated.`
-      );
+      if (this.id && this.log)
+        console.info(
+          `Connection No. ${this.id} (${this.socket.remoteAddress}) has been terminated.`
+        );
       this.call("connectionClosed", this);
     } else {
-      console.warn(
-        `Connection No. ${this.id} (${this.socket.remoteAddress}) has closed with errors."`
-      );
+      if (this.id && this.log)
+        console.warn(
+          `Connection No. ${this.id} (${this.socket.remoteAddress}) has closed with errors."`
+        );
+      else if (this.log) console.warn(`Connection has closed with errors`);
     }
   }
 
   private onClientDisconnected() {
-    console.info(
-      `Client No. ${this.id} (${this.socket.remoteAddress}) has disconnected.`
-    );
+    if (this.id && this.log)
+      console.info(
+        `Client No. ${this.id} (${this.socket.remoteAddress}) has disconnected.`
+      );
     this.call("clientDisconnected", this);
   }
 
@@ -120,3 +140,5 @@ const validateParametters = (socket: any) => {
     throw error;
   }
 };
+
+export = NetTalkConnection;

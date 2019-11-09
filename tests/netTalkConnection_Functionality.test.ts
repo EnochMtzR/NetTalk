@@ -1,9 +1,9 @@
-import NetTalkConnection from "../NetTalkConnection";
+import NetTalkConnection from "../lib/NetTalkConnection";
 import * as MockedTLS from "../__mocks__/tls";
 import * as MockedTCP from "../__mocks__/net";
 import * as tcp from "net";
 import * as tls from "tls";
-import { INetTalkConnectionOptions } from "../types";
+import { INetTalkConnectionOptions } from "../lib/types";
 
 jest.mock("net");
 jest.mock("tls");
@@ -325,6 +325,25 @@ describe("testing NetTalk Connection Functionality", () => {
         connection.on("clientDisconnected", onClientDisconnected);
 
         sslSocket.__emitClientDisconnect();
+      });
+
+      test("should close connection when close()", done => {
+        const tcpSocket = new tcp.Socket();
+        const sslSocket = (new tls.TLSSocket(
+          tcpSocket
+        ) as unknown) as MockedTLS.TLSSocket;
+        const options: INetTalkConnectionOptions = {
+          id: "1",
+          socket: (sslSocket as unknown) as tls.TLSSocket
+        };
+        const connection = new NetTalkConnection(options);
+
+        sslSocket.on("close", (hasError: boolean) => {
+          expect(hasError).toBeFalsy();
+          done();
+        });
+
+        connection.close();
       });
     });
     describe("testing getters", () => {

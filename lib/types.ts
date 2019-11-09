@@ -20,6 +20,7 @@ export interface NetTalkOptions {
   delimiter?: string;
   timeOut?: number;
   keepAlive?: number;
+  log?: boolean;
 }
 
 export interface IEventCallbacks {
@@ -62,6 +63,7 @@ export interface INetTalkConnectionOptions {
   delimiter?: string;
   timeOut?: number;
   keepAlive?: number;
+  log?: boolean;
 }
 
 export interface IConnection {
@@ -88,7 +90,7 @@ export interface IConnection {
 export interface INetTalk {
   currentConnections: NetTalkConnection[];
   isServerUp: boolean;
-  type: "SSL" | "TCP";
+  connectionType: "SSL" | "TCP";
 
   /**
    * Creates and starts a new _NetTalk server_

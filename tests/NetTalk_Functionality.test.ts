@@ -1,10 +1,10 @@
-import NetTalk from "../NetTalk";
+import NetTalk from "../lib/NetTalk";
 import * as fixtures from "./fixtures/NetTalkOptions.fixture";
 import * as MockedTLS from "../__mocks__/tls";
 import * as MockedNET from "../__mocks__/net";
 import * as tls from "tls";
 import * as tcp from "net";
-import NetTalkConnection from "../NetTalkConnection";
+import NetTalkConnection from "../lib/NetTalkConnection";
 
 jest.mock("net");
 jest.mock("tls");

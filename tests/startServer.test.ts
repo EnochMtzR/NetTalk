@@ -1,4 +1,4 @@
-import NetTalk from "../NetTalk";
+import NetTalk from "../lib/NetTalk";
 import * as fixtures from "./fixtures/NetTalkOptions.fixture";
 
 describe("testing createServer()", () => {
@@ -48,7 +48,7 @@ describe("testing createServer()", () => {
           server.on("serverStarted", serverStarted);
           server.startServer();
           expect(server.isServerUp).toBeTruthy();
-          expect(server.type).toBe("SSL");
+          expect(server.connectionType).toBe("SSL");
         });
 
         test("Should start secure server when valid SSL with password provided", done => {
@@ -62,7 +62,7 @@ describe("testing createServer()", () => {
           server.on("serverStarted", serverStarted);
           server.startServer();
           expect(server.isServerUp).toBeTruthy();
-          expect(server.type).toBe("SSL");
+          expect(server.connectionType).toBe("SSL");
         });
       });
     });
@@ -80,7 +80,7 @@ describe("testing createServer()", () => {
       server.on("serverStarted", serverStarted);
       server.startServer();
       expect(server.isServerUp).toBeTruthy();
-      expect(server.type).toBe("TCP");
+      expect(server.connectionType).toBe("TCP");
     });
   });
 });

@@ -12,13 +12,14 @@ import {
   INetTalkConnectionOptions
 } from "./types";
 
-export default class NetTalk implements INetTalk {
+class NetTalk implements INetTalk {
   private host!: string;
   private port!: number;
   private protocol!: "WPP" | "PPP";
   private delimiter!: string;
   private timeOut!: number;
   private keepAlive!: number;
+  private log!: boolean;
   private ssl: ISSLProps | undefined = {
     key: "",
     certificate: "",
@@ -40,6 +41,7 @@ export default class NetTalk implements INetTalk {
       this.delimiter = options.delimiter ? options.delimiter : "\0";
       this.timeOut = options.timeOut || 0;
       this.keepAlive = options.keepAlive || 0;
+      this.log = options.log || false;
 
       if (options.ssl && this.ssl) {
         this.ssl.key = options.ssl.key || "";
@@ -104,10 +106,11 @@ export default class NetTalk implements INetTalk {
       const connectionSocket = await this.connect();
       const connectionOptions: INetTalkConnectionOptions = {
         socket: connectionSocket,
-        id: generateUUID(),
+        id: "",
         delimiter: this.delimiter,
         keepAlive: this.keepAlive,
-        timeOut: this.timeOut
+        timeOut: this.timeOut,
+        log: this.log
       };
 
       this.connection = new NetTalkConnection(connectionOptions);
@@ -117,6 +120,7 @@ export default class NetTalk implements INetTalk {
           "dataReceived",
           (connection: NetTalkConnection, data: string) => {
             resolve(data);
+            this.connection.close();
           }
         );
 
@@ -132,7 +136,7 @@ export default class NetTalk implements INetTalk {
           }
         );
 
-        connectionSocket.write(Buffer.from(`${request}${this.delimiter}`));
+        this.connection.send(request);
       });
     } catch (e) {
       this.errorHandling(e);
@@ -160,7 +164,8 @@ export default class NetTalk implements INetTalk {
       id: generateUUID(),
       delimiter: this.delimiter,
       keepAlive: this.keepAlive,
-      timeOut: this.timeOut
+      timeOut: this.timeOut,
+      log: this.log
     };
     const connection = new NetTalkConnection(options);
 
@@ -181,7 +186,8 @@ export default class NetTalk implements INetTalk {
       id: generateUUID(),
       delimiter: this.delimiter,
       keepAlive: this.keepAlive,
-      timeOut: this.timeOut
+      timeOut: this.timeOut,
+      log: this.log
     };
     const connection = new NetTalkConnection(options);
 
@@ -210,12 +216,23 @@ export default class NetTalk implements INetTalk {
   }
 
   private removeConnection(closedConnection: NetTalkConnection, error?: Error) {
-    this.connections = this.connections.filter(
-      connection => connection.UUID !== closedConnection.UUID
-    );
-    error
-      ? this.call("connectionLost", closedConnection, error)
-      : this.call("connectionLost", closedConnection);
+    if (this.connections.includes(closedConnection)) {
+      this.connections = this.connections.filter(
+        connection => connection.UUID !== closedConnection.UUID
+      );
+      error
+        ? this.call("connectionLost", closedConnection, error)
+        : this.call("connectionLost", closedConnection);
+
+      if (this.log)
+        console.log(
+          `Connection ${closedConnection.UUID} (${
+            closedConnection.clientIP
+          }) has been removed\n\nConnections: [${this.connections.map(
+            connection => connection.UUID
+          )}]\n`
+        );
+    }
   }
 
   get currentConnections() {
@@ -226,7 +243,7 @@ export default class NetTalk implements INetTalk {
     return this.server.listening;
   }
 
-  get type() {
+  get connectionType() {
     return this.server instanceof tls.Server ? "SSL" : "TCP";
   }
 
@@ -322,3 +339,5 @@ const validateOptions = (options: NetTalkOptions) => {
     }
   }
 };
+
+export = NetTalk;
