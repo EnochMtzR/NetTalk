@@ -6,7 +6,7 @@ describe("testing createServer()", () => {
     describe("testing startServer functionality", () => {
       describe("wrong ssl parametters", () => {
         test("should throw error when *.crt file do not match *.pem file", () => {
-          const server = new NetTalk(
+          const server = new NetTalk.Server(
             fixtures.invalidSSLOptions_unmatchingKeyAndCert
           );
 
@@ -16,7 +16,7 @@ describe("testing createServer()", () => {
         });
 
         test("should throw error when password is not provided for a protected key.pem file", () => {
-          const server = new NetTalk(
+          const server = new NetTalk.Server(
             fixtures.invalidSSLOptions_passwordNotGiven
           );
 
@@ -28,7 +28,9 @@ describe("testing createServer()", () => {
         });
 
         test("should throw error when wrong password is provided for key.pem file", () => {
-          const server = new NetTalk(fixtures.invalidSSLOptions_passwordWrong);
+          const server = new NetTalk.Server(
+            fixtures.invalidSSLOptions_passwordWrong
+          );
 
           expect(() => {
             server.startServer();
@@ -38,7 +40,7 @@ describe("testing createServer()", () => {
 
       describe("Valid SSL Parameters", () => {
         test("Should start secure server when valid SSL with no password provided", done => {
-          const server = new NetTalk(fixtures.validSSLOptions_Password);
+          const server = new NetTalk.Server(fixtures.validSSLOptions_Password);
           function serverStarted(type: "SSL" | "TCP") {
             expect(type).toBe("SSL");
             server.shutDown();
@@ -52,7 +54,9 @@ describe("testing createServer()", () => {
         });
 
         test("Should start secure server when valid SSL with password provided", done => {
-          const server = new NetTalk(fixtures.validSSLOptions_noPassword);
+          const server = new NetTalk.Server(
+            fixtures.validSSLOptions_noPassword
+          );
           function serverStarted(type: "SSL" | "TCP") {
             expect(type).toBe("SSL");
             server.shutDown();
@@ -70,7 +74,7 @@ describe("testing createServer()", () => {
 
   describe("testing TCP", () => {
     test("should create tcp server when no ssl attributes provided", done => {
-      const server = new NetTalk(fixtures.validTCPOptions);
+      const server = new NetTalk.Server(fixtures.validTCPOptions);
       function serverStarted(type: "SSL" | "TCP") {
         expect(type).toBe("TCP");
         server.shutDown();

@@ -6,7 +6,7 @@ import { NetTalkOptions } from "../lib/types";
 describe("Testing NetTalk Instantiation", () => {
   test("should throw error when no options are provided", () => {
     expect(() => {
-      new NetTalk(null as any);
+      new NetTalk.Server(null as any);
     }).toThrow("Options must be provided.");
   });
 
@@ -19,7 +19,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: "WPP"
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrowError("Host must be of type string");
     });
 
@@ -31,7 +31,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: "WPP"
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow("Port must be provided.");
 
       expect(() => {
@@ -41,7 +41,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: "WPP"
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow("Port must be provided.");
     });
 
@@ -53,7 +53,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: "WPP"
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow("Port must be of type number");
     });
 
@@ -65,7 +65,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: null as any
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow();
 
       expect(() => {
@@ -75,7 +75,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: "" as any
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow();
     });
 
@@ -87,7 +87,7 @@ describe("Testing NetTalk Instantiation", () => {
           protocol: "a" as "WPP"
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow('Invalid Protocol: must be "WPP" or "PPP"');
     });
 
@@ -100,7 +100,7 @@ describe("Testing NetTalk Instantiation", () => {
           delimiter: "invalid"
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow("Invalid delimiter provided.");
     });
 
@@ -113,7 +113,7 @@ describe("Testing NetTalk Instantiation", () => {
           ssl: {} as any
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow(
         "Key and Certificates must be provided when SSL is being used"
       );
@@ -129,7 +129,7 @@ describe("Testing NetTalk Instantiation", () => {
           }
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow(
         "Key and Certificates must be provided when SSL is being used"
       );
@@ -145,7 +145,7 @@ describe("Testing NetTalk Instantiation", () => {
           }
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow(
         "Key and Certificates must be provided when SSL is being used"
       );
@@ -161,7 +161,7 @@ describe("Testing NetTalk Instantiation", () => {
           }
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow(
         "Key and Certificates must be provided when SSL is being used"
       );
@@ -177,7 +177,7 @@ describe("Testing NetTalk Instantiation", () => {
           }
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow(
         "Key and Certificates must be provided when SSL is being used"
       );
@@ -195,7 +195,7 @@ describe("Testing NetTalk Instantiation", () => {
           }
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow("Key or Certificate not found");
 
       expect(() => {
@@ -209,7 +209,7 @@ describe("Testing NetTalk Instantiation", () => {
           }
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow("Key or Certificate not found");
     });
 
@@ -225,7 +225,7 @@ describe("Testing NetTalk Instantiation", () => {
           }
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow("Key and Certificate must be valid.");
 
       expect(() => {
@@ -239,20 +239,22 @@ describe("Testing NetTalk Instantiation", () => {
           }
         };
 
-        new NetTalk(options);
+        new NetTalk.Server(options);
       }).toThrow("Key and Certificate must be valid.");
     });
   });
 
   test("should return instance of NetTalk when valid Options provided", () => {
-    expect(new NetTalk(fixtures.validSSLOptions_Password)).toBeInstanceOf(
-      NetTalk
-    );
+    expect(
+      new NetTalk.Server(fixtures.validSSLOptions_Password)
+    ).toBeInstanceOf(NetTalk.Server);
 
-    expect(new NetTalk(fixtures.validSSLOptions_noPassword)).toBeInstanceOf(
-      NetTalk
-    );
+    expect(
+      new NetTalk.Server(fixtures.validSSLOptions_noPassword)
+    ).toBeInstanceOf(NetTalk.Server);
 
-    expect(new NetTalk(fixtures.validTCPOptions)).toBeInstanceOf(NetTalk);
+    expect(new NetTalk.Server(fixtures.validTCPOptions)).toBeInstanceOf(
+      NetTalk.Server
+    );
   });
 });

@@ -1,4 +1,4 @@
-import NetTalk from "../lib/NetTalk";
+import * as NetTalk from "../lib/NetTalk";
 import * as fixtures from "./fixtures/NetTalkOptions.fixture";
 import * as MockedTLS from "../__mocks__/tls";
 import * as MockedNET from "../__mocks__/net";
@@ -15,7 +15,7 @@ describe("Testing NetTalk's functionality", () => {
       describe("testing newConnections functionality", () => {
         test("should call on new connection when connection received", done => {
           const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-          const server = new NetTalk(fixtures.validSSLOptions_Password);
+          const server = new NetTalk.Server(fixtures.validSSLOptions_Password);
           const tcpSocket = new tcp.Socket();
           const socket = (new tls.TLSSocket(
             tcpSocket
@@ -41,7 +41,7 @@ describe("Testing NetTalk's functionality", () => {
 
         test("should return connected sockets on get currentConnections()", done => {
           const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-          const server = new NetTalk(fixtures.validSSLOptions_Password);
+          const server = new NetTalk.Server(fixtures.validSSLOptions_Password);
           const tcpSocket = new tcp.Socket();
           const socket1 = (new tls.TLSSocket(
             tcpSocket
@@ -83,7 +83,9 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing single package reception", () => {
           test("should call onPackageReceived when delimiter is received", done => {
             const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-            const server = new NetTalk(fixtures.validSSLOptions_Password);
+            const server = new NetTalk.Server(
+              fixtures.validSSLOptions_Password
+            );
             const tcpSocket = new tcp.Socket();
             const socket = (new tls.TLSSocket(
               tcpSocket
@@ -121,7 +123,9 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing multi-package reception", () => {
           test("should call onPackageReceived until delimiter is received", done => {
             const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-            const server = new NetTalk(fixtures.validSSLOptions_Password);
+            const server = new NetTalk.Server(
+              fixtures.validSSLOptions_Password
+            );
             const tcpSocket = new tcp.Socket();
             const socket = (new tls.TLSSocket(
               tcpSocket
@@ -165,7 +169,9 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing connectionClosed", () => {
           test("should call onConnectionLost when connection is closed by Server", done => {
             const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-            const server = new NetTalk(fixtures.validSSLOptions_Password);
+            const server = new NetTalk.Server(
+              fixtures.validSSLOptions_Password
+            );
             const tcpSocket = new tcp.Socket();
             const socket = (new tls.TLSSocket(
               tcpSocket
@@ -200,7 +206,9 @@ describe("Testing NetTalk's functionality", () => {
 
           test("should remove connection when connection is closed", done => {
             const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-            const server = new NetTalk(fixtures.validSSLOptions_Password);
+            const server = new NetTalk.Server(
+              fixtures.validSSLOptions_Password
+            );
             const tcpSocket = new tcp.Socket();
             const socket1 = (new tls.TLSSocket(
               tcpSocket
@@ -249,7 +257,9 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing client disconnects", () => {
           test("should call onConnectionLost when client close the connection", done => {
             const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-            const server = new NetTalk(fixtures.validSSLOptions_Password);
+            const server = new NetTalk.Server(
+              fixtures.validSSLOptions_Password
+            );
             const tcpSocket = new tcp.Socket();
             const socket = (new tls.TLSSocket(
               tcpSocket
@@ -284,7 +294,9 @@ describe("Testing NetTalk's functionality", () => {
 
           test("should remove connection when client severs the connection", done => {
             const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-            const server = new NetTalk(fixtures.validSSLOptions_Password);
+            const server = new NetTalk.Server(
+              fixtures.validSSLOptions_Password
+            );
             const tcpSocket = new tcp.Socket();
             const socket1 = (new tls.TLSSocket(
               tcpSocket
@@ -333,7 +345,9 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing error in socket", () => {
           test("should call onConnectionLost when error is found on connection", done => {
             const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-            const server = new NetTalk(fixtures.validSSLOptions_Password);
+            const server = new NetTalk.Server(
+              fixtures.validSSLOptions_Password
+            );
             const tcpSocket = new tcp.Socket();
             const socket = (new tls.TLSSocket(
               tcpSocket
@@ -369,7 +383,9 @@ describe("Testing NetTalk's functionality", () => {
 
           test("should remove connection when error is found in connection", done => {
             const sslServer = (new tls.Server() as unknown) as MockedTLS.Server;
-            const server = new NetTalk(fixtures.validSSLOptions_Password);
+            const server = new NetTalk.Server(
+              fixtures.validSSLOptions_Password
+            );
             const tcpSocket = new tcp.Socket();
             const socket1 = (new tls.TLSSocket(
               tcpSocket
@@ -420,7 +436,7 @@ describe("Testing NetTalk's functionality", () => {
     describe("testing Client's functionality", () => {
       test("should receive valid message from server", async () => {
         try {
-          const client = new NetTalk(fixtures.validSSLClientOptions);
+          const client = new NetTalk.Client(fixtures.validSSLClientOptions);
           const sendMessage = "This message is being send in one go";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -433,7 +449,7 @@ describe("Testing NetTalk's functionality", () => {
       test("should throw error when connection timesOut", async () => {
         try {
           fixtures.validSSLClientOptions.delimiter = ";";
-          const client = new NetTalk(fixtures.validSSLClientOptions);
+          const client = new NetTalk.Client(fixtures.validSSLClientOptions);
           const sendMessage = "Message to send";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -446,7 +462,7 @@ describe("Testing NetTalk's functionality", () => {
       test("should throw error when invalid options are provided", async () => {
         try {
           fixtures.validSSLClientOptions.host = "";
-          const client = new NetTalk(fixtures.validSSLClientOptions);
+          const client = new NetTalk.Client(fixtures.validSSLClientOptions);
           const sendMessage = "Message to send";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -459,7 +475,7 @@ describe("Testing NetTalk's functionality", () => {
       test("should throw error when Error in connection", async () => {
         try {
           fixtures.validSSLClientOptions.host = "invalid-host.com";
-          const client = new NetTalk(fixtures.validSSLClientOptions);
+          const client = new NetTalk.Client(fixtures.validSSLClientOptions);
           const sendMessage = "Message to send";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -472,7 +488,7 @@ describe("Testing NetTalk's functionality", () => {
       test("should throw error when Error in sendData", async () => {
         try {
           fixtures.validSSLClientOptions.host = "fake-echo-server.com";
-          const client = new NetTalk(fixtures.validSSLClientOptions);
+          const client = new NetTalk.Client(fixtures.validSSLClientOptions);
           const sendMessage = "Error in sending";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -489,7 +505,7 @@ describe("Testing NetTalk's functionality", () => {
       describe("testing newConnections functionality", () => {
         test("should call on new connection when connection received", done => {
           const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-          const server = new NetTalk(fixtures.validTCPOptions);
+          const server = new NetTalk.Server(fixtures.validTCPOptions);
           const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
           const clientIP = "192.168.1.00";
 
@@ -512,7 +528,7 @@ describe("Testing NetTalk's functionality", () => {
 
         test("should return connected sockets on get currentConnections()", done => {
           const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-          const server = new NetTalk(fixtures.validTCPOptions);
+          const server = new NetTalk.Server(fixtures.validTCPOptions);
           const socket1 = (new tcp.Socket() as unknown) as MockedNET.Socket;
           const socket2 = (new tcp.Socket() as unknown) as MockedNET.Socket;
           let connectionCounter = 0;
@@ -549,7 +565,7 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing single package reception", () => {
           test("should call onPackageReceived when delimiter is received", done => {
             const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-            const server = new NetTalk(fixtures.validTCPOptions);
+            const server = new NetTalk.Server(fixtures.validTCPOptions);
             const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.00";
             const message = "This message is being sent in one go.";
@@ -584,7 +600,7 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing multi-package reception", () => {
           test("should call onPackageReceived until delimiter is received", done => {
             const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-            const server = new NetTalk(fixtures.validTCPOptions);
+            const server = new NetTalk.Server(fixtures.validTCPOptions);
             const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
@@ -625,7 +641,7 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing connectionClosed", () => {
           test("should call onConnectionLost when connection is closed by Server", done => {
             const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-            const server = new NetTalk(fixtures.validTCPOptions);
+            const server = new NetTalk.Server(fixtures.validTCPOptions);
             const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
@@ -657,7 +673,7 @@ describe("Testing NetTalk's functionality", () => {
 
           test("should remove connection when connection is closed", done => {
             const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-            const server = new NetTalk(fixtures.validTCPOptions);
+            const server = new NetTalk.Server(fixtures.validTCPOptions);
             const socket1 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const socket2 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const client1IP = "192.168.1.65";
@@ -701,7 +717,7 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing client disconnects", () => {
           test("should call onConnectionLost when client close the connection", done => {
             const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-            const server = new NetTalk(fixtures.validTCPOptions);
+            const server = new NetTalk.Server(fixtures.validTCPOptions);
             const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.65";
             let connectionId: string;
@@ -733,7 +749,7 @@ describe("Testing NetTalk's functionality", () => {
 
           test("should remove connection when client severs the connection", done => {
             const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-            const server = new NetTalk(fixtures.validTCPOptions);
+            const server = new NetTalk.Server(fixtures.validTCPOptions);
             const socket1 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const socket2 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const client1IP = "192.168.1.65";
@@ -777,7 +793,7 @@ describe("Testing NetTalk's functionality", () => {
         describe("testing error in socket", () => {
           test("should call onConnectionLost when error is found on connection", done => {
             const tcpServer = (new tcp.Server() as unknown) as MockedNET.Server;
-            const server = new NetTalk(fixtures.validTCPOptions);
+            const server = new NetTalk.Server(fixtures.validTCPOptions);
             const socket = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const clientIP = "192.168.1.65";
             const sentError = new Error("Error found in connection");
@@ -810,7 +826,7 @@ describe("Testing NetTalk's functionality", () => {
 
           test("should remove connection when error is found in connection", done => {
             const sslServer = (new tcp.Server() as unknown) as MockedNET.Server;
-            const server = new NetTalk(fixtures.validTCPOptions);
+            const server = new NetTalk.Server(fixtures.validTCPOptions);
             const socket1 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const socket2 = (new tcp.Socket() as unknown) as MockedNET.Socket;
             const client1IP = "192.168.1.65";
@@ -857,7 +873,7 @@ describe("Testing NetTalk's functionality", () => {
     describe("testing Client's functionality", () => {
       test("should receive valid message from server", async () => {
         try {
-          const client = new NetTalk(fixtures.validTCPClientOptions);
+          const client = new NetTalk.Client(fixtures.validTCPClientOptions);
           const sendMessage = "This message is being send in one go";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -870,7 +886,7 @@ describe("Testing NetTalk's functionality", () => {
       test("should throw error when connection timesOut", async () => {
         try {
           fixtures.validTCPClientOptions.delimiter = ";";
-          const client = new NetTalk(fixtures.validTCPClientOptions);
+          const client = new NetTalk.Client(fixtures.validTCPClientOptions);
           const sendMessage = "Message to send";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -883,7 +899,7 @@ describe("Testing NetTalk's functionality", () => {
       test("should throw error when invalid options are provided", async () => {
         try {
           fixtures.validTCPClientOptions.host = "";
-          const client = new NetTalk(fixtures.validTCPClientOptions);
+          const client = new NetTalk.Client(fixtures.validTCPClientOptions);
           const sendMessage = "Message to send";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -896,7 +912,7 @@ describe("Testing NetTalk's functionality", () => {
       test("should throw error when Error in connection", async () => {
         try {
           fixtures.validTCPClientOptions.host = "invalid-host.com";
-          const client = new NetTalk(fixtures.validTCPClientOptions);
+          const client = new NetTalk.Client(fixtures.validTCPClientOptions);
           const sendMessage = "Message to send";
           const receivedMessage = await client.sendRequest(sendMessage);
 
@@ -909,7 +925,7 @@ describe("Testing NetTalk's functionality", () => {
       test("should throw error when Error in sendData", async () => {
         try {
           fixtures.validTCPClientOptions.host = "fake-echo-server.com";
-          const client = new NetTalk(fixtures.validTCPClientOptions);
+          const client = new NetTalk.Client(fixtures.validTCPClientOptions);
           const sendMessage = "Error in sending";
           const receivedMessage = await client.sendRequest(sendMessage);
 
