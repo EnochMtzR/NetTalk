@@ -1,6 +1,6 @@
 {
   "name": "nettalk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Library for connecting via sockets with a NetTalk's Clarion Application using WPP or Partial Packet Protocol",
   "main": "dist/NetTalk.js",
   "types": "dist/NetTalk.d.ts",
