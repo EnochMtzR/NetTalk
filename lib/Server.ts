@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as tls from "tls";
 import * as tcp from "net";
 import generateUUID from "uuid/v4";
+import chalk from "chalk";
 import NetObject from "./NetObject";
 import {
   IEventCallbacks,
@@ -63,7 +64,9 @@ export class Server extends NetObject {
 
     this.connections.push(connection);
 
-    console.log(`New SSL connection received from ${connection.clientIP}.`);
+    console.log(
+      chalk.green(`New SSL connection received from ${connection.clientIP}.`)
+    );
     this.call("connectionReceived", connection);
   }
 
@@ -84,16 +87,24 @@ export class Server extends NetObject {
     connection.on("timeOut", this.removeConnection.bind(this));
 
     this.connections.push(connection);
-    console.log(`New TCP connection received from ${connection.clientIP}.`);
+    console.log(
+      chalk.green(`New TCP connection received from ${connection.clientIP}.`)
+    );
     this.call("connectionReceived", connection);
   }
 
   private listening() {
     if (this.server instanceof tls.Server) {
-      console.info(`Secure server started listening on port ${this.port}`);
+      console.info(
+        chalk.bgGreen.black(
+          `Secure server started listening on port ${this.port}`
+        )
+      );
       this.call("serverStarted", "SSL");
     } else {
-      console.info(`Server started listening on port ${this.port}`);
+      console.info(
+        chalk.bgGreen.black(`Server started listening on port ${this.port}`)
+      );
       this.call("serverStarted", "TCP");
     }
   }

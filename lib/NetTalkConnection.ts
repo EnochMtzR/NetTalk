@@ -1,5 +1,6 @@
 import * as tls from "tls";
 import * as tcp from "net";
+import chalk from "chalk";
 import {
   IConEventCallbacks,
   INetTalkConnectionOptions,
@@ -55,17 +56,21 @@ class NetTalkConnection implements IConnection {
 
   close() {
     this.socket.end(() => {
-      if (this.log) console.info("Connection successfully closed!");
+      console.info(chalk.blue("Connection successfully closed!"));
     });
   }
 
   private onDataReceived(data: Buffer) {
     if (this.log)
-      console.info(`Data received from: ${this.clientIP} (${this.id})`);
+      console.info(
+        chalk.greenBright(`Data received from: ${this.clientIP} (${this.id})`)
+      );
     this.currentMessage = `${this.currentMessage}${data.toString("utf8")}`;
     if (this.isDataComplete(data)) {
       if (this.log)
-        console.info(`Data completed for: ${this.clientIP} (${this.id})`);
+        console.info(
+          chalk.greenBright(`Data completed for: ${this.clientIP} (${this.id})`)
+        );
       this.call("dataReceived", this, this.currentMessage.slice(0, -1));
       this.currentMessage = "";
     }
@@ -76,11 +81,13 @@ class NetTalkConnection implements IConnection {
   }
 
   private onTimeOut() {
-    if (this.id && this.log)
+    if (this.id)
       console.warn(
-        `Connection No. ${this.id} (${this.socket.remoteAddress}) has timed out!`
+        chalk.yellow(
+          `Connection No. ${this.id} (${this.socket.remoteAddress}) has timed out!`
+        )
       );
-    else if (this.log) console.warn(`Connection has timed out!`);
+    else console.warn(chalk.yellow(`Connection has timed out!`));
     this.call("timeOut", this);
     this.socket.destroy();
   }
@@ -88,25 +95,32 @@ class NetTalkConnection implements IConnection {
   private onError(error: Error) {
     if (this.id && this.log)
       console.error(
-        `Error on connection No. ${this.id} (${this.socket.remoteAddress})\n${error}`
+        chalk.red(
+          `Error on connection No. ${this.id} (${this.socket.remoteAddress})\n${error}`
+        )
       );
-    else if (this.log) console.error(`Error:\n${error}`);
+    else if (this.log) console.error(chalk.red(`Error:\n${error}`));
     this.call("connectionClosed", this, error);
   }
 
   private onClosed(withError: boolean) {
     if (!withError) {
-      if (this.id && this.log)
+      if (this.id)
         console.info(
-          `Connection No. ${this.id} (${this.socket.remoteAddress}) has been terminated.`
+          chalk.blue(
+            `Connection No. ${this.id} (${this.socket.remoteAddress}) has been terminated.`
+          )
         );
       this.call("connectionClosed", this);
     } else {
       if (this.id && this.log)
         console.warn(
-          `Connection No. ${this.id} (${this.socket.remoteAddress}) has closed with errors."`
+          chalk.yellow(
+            `Connection No. ${this.id} (${this.socket.remoteAddress}) has closed with errors."`
+          )
         );
-      else if (this.log) console.warn(`Connection has closed with errors`);
+      else if (this.log)
+        console.warn(chalk.yellow(`Connection has closed with errors`));
     }
   }
 

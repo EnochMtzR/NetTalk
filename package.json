@@ -5,6 +5,7 @@
   "main": "dist/NetTalk.js",
   "types": "dist/NetTalk.d.ts",
   "dependencies": {
+    "chalk": "^3.0.0",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
