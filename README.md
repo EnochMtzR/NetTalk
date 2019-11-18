@@ -1,5 +1,9 @@
 # NetTalk
 
+![](https://github.com/josnoc/NetTalk/workflows/Linux%20Build/badge.svg)
+![](https://github.com/josnoc/NetTalk/workflows/Windows%20Build/badge.svg)
+![](https://github.com/josnoc/NetTalk/workflows/Osx%20Build/badge.svg)
+
 Library for connecting via sockets with a NetTalk's Clarion Application using WPP or Partial Packet Protocol
 
 ## Installation
