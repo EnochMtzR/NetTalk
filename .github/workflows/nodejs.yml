@@ -1,4 +1,4 @@
-name: NetTalk
+name: Build
 
 on: [push]
 
