@@ -11,6 +11,7 @@ export default class NetObject {
   protected delimiter!: string;
   protected timeOut!: number;
   protected keepAlive!: number;
+  protected keepConnected!: boolean;
   protected log!: boolean;
   protected ssl: ISSLProps | undefined = {
     key: "",
@@ -34,6 +35,7 @@ export default class NetObject {
       this.timeOut = options.timeOut || 0;
       this.keepAlive = options.keepAlive || 0;
       this.log = options.log || false;
+      this.keepConnected = options.keepConnected || false;
 
       if (options.ssl && this.ssl) {
         this.ssl.key = options.ssl.key || "";

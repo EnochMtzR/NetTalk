@@ -434,6 +434,25 @@ describe("Testing NetTalk's functionality", () => {
       });
     });
     describe("testing Client's functionality", () => {
+      test("should not close connection when keepConnected is set", async () => {
+        try {
+          const client = new NetTalk.Client(
+            fixtures.validSSLClientOptions_keepConnected
+          );
+
+          const onClose = jest.fn();
+
+          client.on("connectionClosed", onClose)
+
+          const response = await client.sendRequest("testing not closed");
+          if (response) {
+            expect(onClose).not.toHaveBeenCalled();
+          }
+        } catch (e) {
+          throw e;
+        }
+      });
+
       test("should receive valid message from server", async () => {
         try {
           const client = new NetTalk.Client(fixtures.validSSLClientOptions);

@@ -34,6 +34,18 @@ export const validSSLClientOptions: NetTalkOptions = {
   timeOut: 3000
 };
 
+export const validSSLClientOptions_keepConnected: NetTalkOptions = {
+  host: "fake-echo-server.com",
+  port: 3000,
+  protocol: "PPP",
+  ssl: {
+    rejectUnauthorized: false
+  },
+  delimiter: "\0",
+  timeOut: 3000,
+  keepConnected: true
+};
+
 export const invalidSSLOptions_unmatchingKeyAndCert: NetTalkOptions = {
   host: "",
   port: 3000,

@@ -21,6 +21,7 @@ export interface NetTalkOptions {
   timeOut?: number;
   keepAlive?: number;
   log?: boolean;
+  keepConnected?: boolean;
 }
 
 export interface IEventCallbacks {
@@ -28,6 +29,14 @@ export interface IEventCallbacks {
   connectionReceived: (connection: NetTalkConnection) => void;
   packageReceived: (connection: NetTalkConnection, data: string) => void;
   connectionLost: (connection: NetTalkConnection, error?: Error) => void;
+}
+
+export interface IEventClientCallbacks {
+  connectionClosed: (connection: NetTalkConnection, error?: Error) => void;
+}
+
+export interface IEventClientCallbackParams {
+  connectionClosed: [NetTalkConnection, Error?];
 }
 
 export interface IEventCallbackParams {
